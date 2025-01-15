@@ -36,7 +36,9 @@ def PiaInnerScrapper(url):
                 #else:
                 #    return None   
 
-def PicScrapperMain(doc_Pia, i, concerts):
+def PiaScrapper(doc_Pia):
+    i=0
+    concerts = []
     for div_Pia in doc_Pia.find_all("div"):
         a_tag_Pia = div_Pia.find("a")
         
@@ -44,6 +46,7 @@ def PicScrapperMain(doc_Pia, i, concerts):
             figcaption_Pia = a_tag_Pia.find("figcaption")
             
             if figcaption_Pia:
+                
                 name_Pia = figcaption_Pia.find("h2")
                 namePia = name_Pia.get_text(strip=True) if name_Pia else None
                 
@@ -63,14 +66,8 @@ def PicScrapperMain(doc_Pia, i, concerts):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        print(i)
-                        
-def PiaScrapper(doc_Pia):
-    i=0
-    concerts = []
-    PicScrapperMain(doc_Pia, i, concerts)                       
+                        print(i)                       
     return concerts
-
 
 concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
