@@ -1,9 +1,12 @@
 from bs4 import BeautifulSoup
 import requests
+import re
 
-with open("dummy.html", "r") as f:
-    doc = BeautifulSoup(f, "html.parser")
-    
-tags = doc.find_all("p")[0]
+url = "https://t.pia.jp/pia/event/event.do?eventBundleCd=b2452501"
 
-print(tags.find_all("b"))
+result = requests.get(url)
+doc = BeautifulSoup(result.text, "html.parser")
+
+# tags = doc.find_all(text=re.compile("2025.*"), limit=1)
+# for tag in tags:
+#     print(tag.strip())
