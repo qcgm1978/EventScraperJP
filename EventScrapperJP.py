@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import openpyxl
 import pykakasi
 import pandas as pd
+import time
 
 def doc_Pia_from_url(url):
     pagePia = requests.get(url)
@@ -24,22 +25,25 @@ def convert_to_romaji(japanese_text):
 
 def PiaInnerScrapper(url):
     Inner_doc_Pia = doc_Pia_from_url(url)
-    PPia = Inner_doc_Pia.find(string=re.compile("会場.*"))
-    return convert_to_romaji(PPia)
-     
+    for div_Inner_Pia in Inner_doc_Pia.find_all("div", class_="textDefinitionList-2024__item"):
+        dt_tag_Pia = div_Inner_Pia.find("dt", class_="textDefinitionList-2024__title")
+        if dt_tag_Pia and "会場" in dt_tag_Pia.get_text(strip=True):
+            dd_tag_Pia = div_Inner_Pia.find("dd", class_="textDefinitionList-2024__desc")
+            if dd_tag_Pia:
+                return dd_tag_Pia.get_text(strip=True)
+                #if PPia:
+                #    return convert_to_romaji(PPia)
+                #else:
+                #    return None   
 
-def PiaScrapper(doc_Pia):
-    i=0
-    concerts = []
+def PicScrapperMain(doc_Pia, i, concerts):
     for div_Pia in doc_Pia.find_all("div"):
-        
         a_tag_Pia = div_Pia.find("a")
+        
         if a_tag_Pia:
-            
             figcaption_Pia = a_tag_Pia.find("figcaption")
             
             if figcaption_Pia:
-                
                 name_Pia = figcaption_Pia.find("h2")
                 namePia = name_Pia.get_text(strip=True) if name_Pia else None
                 
@@ -59,8 +63,14 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        print(i)                       
+                        print(i)
+                        
+def PiaScrapper(doc_Pia):
+    i=0
+    concerts = []
+    PicScrapperMain(doc_Pia, i, concerts)                       
     return concerts
+
 
 concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
@@ -72,8 +82,12 @@ sheet.append(["Name", "Romaji", "Place", "Date", "Link"]) #If new column added, 
 
 for concert in concerts:
     sheet.append([concert["Name"], concert["Romaji"], concert["Place"], concert["Date"], concert["Link"]])
-
-workbook.save(excel_file)
+try:
+    workbook.save(excel_file)
+except: 
+    print("Zamknij Excela debilu")
+    time.sleep(10)
+    workbook.save(excel_file)
 
 def remove_duplicates_in_excel(file_name):
     workbook = openpyxl.load_workbook(file_name)
