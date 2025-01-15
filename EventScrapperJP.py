@@ -30,8 +30,8 @@ for div_Pia in doc_Pia.find_all("div"):
             linkPia = a_tag_Pia.get("href") if a_tag_Pia else None
             
             if namePia and datePia and linkPia:
-                concerts.append({"Name": namePia, "Date": datePia, "Link": linkPia})
-
+                if not any(linkPia in concert["Link"] for concert in concerts):
+                    concerts.append({"Name": namePia, "Date": datePia, "Link": linkPia})
 
 excel_file = "concerts.xlsx"
 workbook = openpyxl.Workbook()
