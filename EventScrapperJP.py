@@ -92,7 +92,7 @@ except:
     time.sleep(10)
     workbook.save(excel_file)
 
-def remove_duplicates_in_excel(file_name):
+def remove_duplicates_in_excel_pia(file_name):
     workbook = openpyxl.load_workbook(file_name)
     sheet = workbook.active
     rows = list(sheet.iter_rows(values_only=True))
@@ -112,9 +112,9 @@ def remove_duplicates_in_excel(file_name):
 
     workbook.save(file_name)
     
-remove_duplicates_in_excel(excel_file)
+remove_duplicates_in_excel_pia(excel_file)
 
-def style_sort_excel(file_name):
+def style_sort_excel_pia(file_name):
     workbook = openpyxl.load_workbook(file_name)
     sheet = workbook.active
     row_count = sheet.max_row
@@ -151,5 +151,5 @@ def style_sort_excel(file_name):
     
     workbook.save(file_name)
     
-style_sort_excel(excel_file)
+style_sort_excel_pia(excel_file)
 print(f"Done! Scraped {len(concerts)} events. Data saved to {excel_file}.")
