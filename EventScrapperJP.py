@@ -70,9 +70,9 @@ def PiaScrapper(doc_Pia):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
                         #if i>1:
-                        #  break #tester
+                        #    break #tester
                         print(i)                       
-    print("Finished scraping {doc_Pia}. Proceeding to the next site.")
+    print(f"Finished scraping current site. Proceeding to the next one.")
     return concerts
 
 concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
@@ -114,11 +114,21 @@ def remove_duplicates_in_excel(file_name):
     
 remove_duplicates_in_excel(excel_file)
 
-def style_excel(file_name):
+def style_sort_excel(file_name):
     workbook = openpyxl.load_workbook(file_name)
     sheet = workbook.active
     row_count = sheet.max_row
     column_count = sheet.max_column
+    
+    df = pd.DataFrame(sheet.values)
+    headers = df.iloc[0]
+    df = df[1:]
+    df.columns = headers
+    df = df.sort_values(by="Date", ascending=True)
+    sheet.delete_rows(1, sheet.max_row)
+    for row in [df.columns.tolist()] + df.values.tolist():
+       sheet.append(row)
+    
     title_row_style = Font(size=14, color="FFFFFF", bold=True)
     for i in range (0,column_count):
         sheet.cell(row=1, column=i+1).font = title_row_style
@@ -129,9 +139,6 @@ def style_excel(file_name):
     
     for z in range (0, column_count):
         sheet.cell(row=1, column = z + 1).fill = PatternFill(start_color="38AA49", end_color="38AA49", fill_type="solid")
-        
-    sheet.auto_filter.ref = sheet.dimensions
-    
     for x in range(2, row_count):
         for z in range (0, column_count): 
             c = sheet.cell(row=x, column=z + 1)
@@ -144,5 +151,5 @@ def style_excel(file_name):
     
     workbook.save(file_name)
     
-style_excel(excel_file)
+style_sort_excel(excel_file)
 print(f"Done! Scraped {len(concerts)} events. Data saved to {excel_file}.")
