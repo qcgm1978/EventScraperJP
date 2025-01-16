@@ -5,6 +5,9 @@ import openpyxl
 import pykakasi
 import pandas as pd
 import time
+from openpyxl.styles import Font, Color, PatternFill, Alignment
+from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
+from openpyxl.utils import get_column_letter
 
 def doc_Pia_from_url(url):
     pagePia = requests.get(url)
@@ -66,6 +69,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
+                        #if i>1:
+                        #   break #tester
                         print(i)                       
     return concerts
 
@@ -105,6 +110,23 @@ def remove_duplicates_in_excel(file_name):
         sheet.append(unique_row)
 
     workbook.save(file_name)
+    
 remove_duplicates_in_excel(excel_file)
 
+def style_excel(file_name):
+    workbook = openpyxl.load_workbook(file_name)
+    sheet = workbook.active
+    title_row_style = Font(size=14, color="1A4FDF", bold=True)
+    for i in range (0,5): #if number of columns changed, change value
+        sheet.cell(row=1, column=i+1).font = title_row_style
+    dim_holder = DimensionHolder(worksheet=sheet)
+    for col in range(sheet.min_column, sheet.max_column + 1):
+        dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=35)
+    sheet.column_dimensions = dim_holder
+    
+    sheet.auto_filter.ref = sheet.dimensions
+    
+    workbook.save(file_name)
+    
+style_excel(excel_file)
 print(f"Scraped {len(concerts)} concerts. Data saved to {excel_file}.")
