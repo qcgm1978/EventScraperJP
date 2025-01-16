@@ -69,9 +69,10 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        #if i>5:
+                        #if i>1:
                         #  break #tester
                         print(i)                       
+    print("Finished scraping {doc_Pia}. Proceeding to the next site.")
     return concerts
 
 concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
@@ -129,6 +130,8 @@ def style_excel(file_name):
     for z in range (0, column_count):
         sheet.cell(row=1, column = z + 1).fill = PatternFill(start_color="38AA49", end_color="38AA49", fill_type="solid")
         
+    sheet.auto_filter.ref = sheet.dimensions
+    
     for x in range(2, row_count):
         for z in range (0, column_count): 
             c = sheet.cell(row=x, column=z + 1)
@@ -138,10 +141,8 @@ def style_excel(file_name):
         for z in range (0, column_count):
             l = sheet.cell(row=row_count, column=z + 1)
             l.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
-            
-    sheet.auto_filter.ref = sheet.dimensions
     
     workbook.save(file_name)
     
 style_excel(excel_file)
-print(f"Scraped {len(concerts)} concerts. Data saved to {excel_file}.")
+print(f"Done! Scraped {len(concerts)} events. Data saved to {excel_file}.")
