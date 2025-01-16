@@ -5,7 +5,7 @@ import openpyxl
 import pykakasi
 import pandas as pd
 import time
-from openpyxl.styles import Font, Color, PatternFill, Alignment
+from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 
@@ -69,8 +69,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        #if i>1:
-                        #   break #tester
+                        #if i>5:
+                        #  break #tester
                         print(i)                       
     return concerts
 
@@ -116,14 +116,29 @@ remove_duplicates_in_excel(excel_file)
 def style_excel(file_name):
     workbook = openpyxl.load_workbook(file_name)
     sheet = workbook.active
-    title_row_style = Font(size=14, color="1A4FDF", bold=True)
-    for i in range (0,5): #if number of columns changed, change value
+    row_count = sheet.max_row
+    column_count = sheet.max_column
+    title_row_style = Font(size=14, color="FFFFFF", bold=True)
+    for i in range (0,column_count): #if number of columns changed, change value
         sheet.cell(row=1, column=i+1).font = title_row_style
     dim_holder = DimensionHolder(worksheet=sheet)
     for col in range(sheet.min_column, sheet.max_column + 1):
         dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=35)
     sheet.column_dimensions = dim_holder
     
+    for z in range (0, column_count): #if number of columns changed, change value
+        sheet.cell(row=1, column = z + 1).fill = PatternFill(start_color="38AA49", end_color="38AA49", fill_type="solid")
+        
+    for x in range(2, row_count):
+        for z in range (0, column_count): #if number of columns changed, change value
+            c = sheet.cell(row=x, column=z + 1)
+            if x % 2 != 0:
+                c.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
+    if row_count % 2 != 0:
+        for z in range (0, column_count):
+            l = sheet.cell(row=row_count, column=z + 1)
+            l.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
+            
     sheet.auto_filter.ref = sheet.dimensions
     
     workbook.save(file_name)
