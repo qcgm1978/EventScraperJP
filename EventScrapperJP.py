@@ -11,21 +11,28 @@ from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 EXCEL_FILE = "EventsJP2025.xlsx"
 
+def save_workbook(workbook):    
+    try:
+        workbook.save(EXCEL_FILE)
+    except: 
+        print("Close Excel you imbecile!")
+        time.sleep(15)
+        save_workbook(workbook)
+
 def convert_to_romaji(japanese_text):
     kks = pykakasi.kakasi()
     result = kks.convert(japanese_text)
     romaji_text = ''.join([item['hepburn'] for item in result])
     return romaji_text
 
-def doc_Pia_from_url(url):
+def doc_from_url(url):
     pagePia = requests.get(url)
     pagePia.encoding = 'utf-8'
     html_content_Pia = pagePia.text
-    doc_Pia = BeautifulSoup(html_content_Pia, "html.parser")
-    return doc_Pia
+    return BeautifulSoup(html_content_Pia, "html.parser")
 
 def PiaInnerScrapper(url):
-    Inner_doc_Pia = doc_Pia_from_url(url)
+    Inner_doc_Pia = doc_from_url(url)
     for div_Inner_Pia in Inner_doc_Pia.find_all("div", class_="textDefinitionList-2024__item"):
         dt_tag_Pia = div_Inner_Pia.find("dt", class_="textDefinitionList-2024__title")
         if dt_tag_Pia and "会場" in dt_tag_Pia.get_text(strip=True):
@@ -67,8 +74,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in concert["Link"] for concert in concerts):
                         concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        if i>1:
-                            break #tester
+                        #if i>1:
+                        #    break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return concerts
@@ -105,7 +112,7 @@ def remove_duplicates_in_excel_pia():
     for unique_row in unique_rows:
         sheet.append(unique_row)
 
-    workbook.save(EXCEL_FILE)
+    save_workbook(workbook)
 
 def style_sort_excel(sheet_name, sorting_column):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
@@ -142,14 +149,13 @@ def style_sort_excel(sheet_name, sorting_column):
             l = sheet.cell(row=row_count, column=z + 1)
             l.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
     
-    workbook.save(EXCEL_FILE)
+    save_workbook(workbook)
 
-doc_PiaM = doc_Pia_from_url("https://t.pia.jp/music/")
-doc_PiaA = doc_Pia_from_url("https://t.pia.jp/anime/")
-doc_PiaE = doc_Pia_from_url("https://t.pia.jp/event/")
+doc_PiaM = doc_from_url("https://t.pia.jp/music/")
+doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
+doc_PiaE = doc_from_url("https://t.pia.jp/event/")
 
 concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
-
 
 sheet_name = "Events_t.pia.jp"
 header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
@@ -158,14 +164,11 @@ workbook, sheet = OpenSheet(sheet_name, header)
     
 for concert in concerts:
     sheet.append([concert["Name"], concert["Romaji"], concert["Place"], concert["Date"], concert["Link"]])
-try:
-    workbook.save(EXCEL_FILE)
-except: 
-    print("Zamknij Excela debilu")
-    time.sleep(10)
-    workbook.save(EXCEL_FILE)
+    
+save_workbook(workbook)
 
 remove_duplicates_in_excel_pia()
+
 style_sort_excel(sheet_name, "Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
@@ -174,4 +177,4 @@ sheet_name = "Events_eplus.jp"
 header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
-workbook.save(EXCEL_FILE)
+save_workbook(workbook)
