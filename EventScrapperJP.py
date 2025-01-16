@@ -174,7 +174,9 @@ style_sort_excel(sheet_name, "Date")
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
 sheet_name = "Events_eplus.jp"
-header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
+header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
+for concert in concerts:
+    sheet.append([concert["Name"], concert["Romaji"], concert["Place"], concert["Date"], concert["Date"], concert["Link"]])
 save_workbook(workbook)
