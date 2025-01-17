@@ -80,6 +80,50 @@ def PiaScrapper(doc_Pia):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
+def eplusScrapper(doc_eplus, month): 
+    i=0
+    Eplusconcerts = []
+    for li_eplus in doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last"):
+        if li_eplus:
+                max_pages = int(li_eplus.get_text(strip=True))
+                print(f"Max pages: {max_pages}")
+            
+                for page in range(1, max_pages+1):
+                    url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
+                    print(f"Scraping page: {url}")
+                    doc_eplus = doc_from_url(url)
+                
+                    for div_eplus in doc_eplus.find_all("div"):
+                        a_tag_eplus = div_eplus.find("a")
+                        if a_tag_eplus:
+                            header_eplus = a_tag_eplus.find("header")
+                            if header_eplus:
+                                name_eplus = header_eplus.find("h3")
+                                nameEplus = name_eplus.get_text(strip=True) if name_eplus else None
+                                if nameEplus:
+                                    romajiEplus = convert_to_romaji(nameEplus)
+                                else:
+                                    romajiEplus = None
+                                date_year = a_tag_eplus.find("span", class_="ticket-item__yyyy")
+                                date_mmdd = a_tag_eplus.find("span", class_="ticket-item__mmdd")
+                                dateEplus = (
+                                    f"{date_year.get_text(strip=True)}{date_mmdd.get_text(strip=True)}" 
+                                    if date_year and date_mmdd else None)      
+                                div_eplus_venue = a_tag_eplus.find("div", class_="ticket-item__venue")
+                                if div_eplus_venue:
+                                    place_eplus = div_eplus_venue.find("p")
+                                    placeEplus = place_eplus.get_text(strip=True) if place_eplus else None
+                                linkEplus = "https://eplus.jp" + a_tag_eplus.get("href") if a_tag_eplus else None
+                                if nameEplus and dateEplus and linkEplus:
+                                    if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
+                                        Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date": dateEplus, "Link": linkEplus})
+                                        i+=1
+                                        #if i>1:
+                                        #    break #tester
+                                        print(i)    
+    print(f"Finished scraping current site. Proceeding to the next one.")
+    return Eplusconcerts
+
 def OpenSheet(sheet_name, header):
     if os.path.exists(EXCEL_FILE):
         workbook = openpyxl.load_workbook(EXCEL_FILE)
@@ -173,6 +217,8 @@ style_sort_excel(sheet_name, "Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
+## Here we start scrapping eplus.jp ##
+
 try:
     doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
 except:
@@ -184,15 +230,17 @@ except:
     print("Error with eplus.jp. It's probably asleep. Trying again later.")
     exit()
 
-#def eplusScrapper(doc_eplus):
-
-
-#Eplusconcerts = eplusScrapper(doc_eplus_april) + eplusScrapper(doc_eplus_may)
+Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
 
 sheet_name = "Events_eplus.jp"
 header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
-#for Eplusconcert in Eplusconcerts:
-#    sheet.append([Eplusconcerts["Name"], Eplusconcerts["Romaji"], Eplusconcerts["Place"], Eplusconcerts["Date"], Eplusconcerts["Date"], Eplusconcerts["Link"]])
+
+for Eplusconcert in Eplusconcerts:
+    sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date"], Eplusconcert["Date"], Eplusconcert["Link"]])
 save_workbook(workbook)
+
+style_sort_excel(sheet_name, "Beginning Date")
+
+print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
