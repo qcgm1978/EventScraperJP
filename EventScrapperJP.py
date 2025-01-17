@@ -74,8 +74,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
                         Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        if i>1:
-                            break #tester
+                        #if i>1:
+                        #    break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
