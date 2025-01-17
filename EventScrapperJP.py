@@ -55,8 +55,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
                         Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        #if i>1:
-                        #    break #tester
+                        if i>1:
+                            break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
@@ -147,9 +147,40 @@ def remove_duplicates_in_excel_eplus():
     
     helper.save_workbook(workbook)
     
-
+def style_sort_excel(sheet_name, sorting_column):
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    sheet = workbook[sheet_name]
+    row_count = sheet.max_row
+    column_count = sheet.max_column
     
-    helper.save_workbook(workbook)
+    df = pd.DataFrame(sheet.values)
+    headers = df.iloc[0]
+    df = df[1:]
+    df.columns = headers
+    df = df.sort_values(by=sorting_column, ascending=True)
+    sheet.delete_rows(1, sheet.max_row)
+    for row in [df.columns.tolist()] + df.values.tolist():
+       sheet.append(row)
+    
+    title_row_style = Font(size=14, color="FFFFFF", bold=True)
+    for i in range (0,column_count):
+        sheet.cell(row=1, column=i+1).font = title_row_style
+    dim_holder = DimensionHolder(worksheet=sheet)
+    for col in range(sheet.min_column, sheet.max_column + 1):
+        dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=35)
+    sheet.column_dimensions = dim_holder
+    
+    for z in range (0, column_count):
+        sheet.cell(row=1, column = z + 1).fill = PatternFill(start_color="38AA49", end_color="38AA49", fill_type="solid")
+    for x in range(2, row_count):
+        for z in range (0, column_count): 
+            c = sheet.cell(row=x, column=z + 1)
+            if x % 2 != 0:
+                c.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
+    if row_count % 2 != 0:
+        for z in range (0, column_count):
+            l = sheet.cell(row=row_count, column=z + 1)
+            l.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
 
 doc_PiaM = helper.doc_from_url("https://t.pia.jp/music/")
 doc_PiaA = helper.doc_from_url("https://t.pia.jp/anime/")
@@ -169,7 +200,7 @@ helper.save_workbook(workbook)
 
 remove_duplicates_in_excel_pia()
 
-helper.style_sort_excel(sheet_name, "Date")
+style_sort_excel(sheet_name, "Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
@@ -199,6 +230,6 @@ helper.save_workbook(workbook)
 
 remove_duplicates_in_excel_eplus()
 
-helper.style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning date?
+style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning date?
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
