@@ -217,6 +217,8 @@ def style_sort_excel(sheet_name, sorting_column):
     
     save_workbook(workbook)
 
+## Here we start scrapping pia.jp ##
+
 doc_PiaM = doc_from_url("https://t.pia.jp/music/")
 doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
 doc_PiaE = doc_from_url("https://t.pia.jp/event/")
@@ -268,3 +270,29 @@ remove_duplicates_in_excel_eplus()
 style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning date?
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
+
+## Here we start scrapping l-tike ##
+
+def ltikeScrapper(doc_ltike):
+    i=0
+    ltikeconcerts = []
+
+            
+    #        if name_ltike and date_ltike and link_ltike:
+    #            if not any(link_ltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
+    #                ltikeconcerts.append({"Name": name_ltike, "Romaji": romaji_ltike, "Place": place_ltike, "Date": date_ltike, "Link": link_ltike})
+    #                i+=1
+    #                #if i>1:
+    #                #    break #tester
+    #                print(i)
+    #print(f"Finished scraping current site. Proceeding to the next one.")
+    return ltikeconcerts
+
+doc_ltike_events = doc_from_url("https://l-tike.com/event/")
+doc_ltike_concerts = doc_from_url("https://l-tike.com/concert/")
+
+try:
+    ltikeconcerts = ltikeScrapper(doc_ltike_events) + ltikeScrapper(doc_ltike_concerts)
+except:
+    print("Error with pia.jp. It's probably asleep. Trying again later.")
+    exit()
