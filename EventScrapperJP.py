@@ -220,8 +220,12 @@ def style_sort_excel(sheet_name, sorting_column):
 doc_PiaM = doc_from_url("https://t.pia.jp/music/")
 doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
 doc_PiaE = doc_from_url("https://t.pia.jp/event/")
+try:
+    Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
+except:
+    print("Error with pia.jp. It's probably asleep. Trying again later.")
+    exit()
 
-Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
 sheet_name = "Events_t.pia.jp"
 header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
@@ -241,16 +245,8 @@ print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
 ## Here we start scrapping eplus.jp ##
 
-try:
-    doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
-except:
-    print("Error with eplus.jp. It's probably asleep. Trying again later.")
-    exit()
-try:
-    doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
-except:
-    print("Error with eplus.jp. It's probably asleep. Trying again later.")
-    exit()
+doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
+doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
 
 try:
     Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
