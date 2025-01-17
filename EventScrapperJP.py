@@ -140,19 +140,21 @@ def OpenSheet(sheet_name, header):
 def remove_duplicates_in_excel_pia():
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook["Events_t.pia.jp"]
-    
+    rows = list(sheet.iter_rows(values_only=True))
+    headers = rows[0]
+    unique_rows = [headers]
+
     seen = set()
-    
-    row_number = 2
-    while row_number <= sheet.max_row:
-        link = sheet.cell(row=row_number, column=5).value  #Link column (adjust if moved)
-        
-        if link in seen:
-            sheet.delete_rows(row_number)
-        else:
+    for row in rows[1:]:
+        link = row[4] #Change if columns moved
+        if link not in seen:
+            unique_rows.append(row)
             seen.add(link)
-            row_number += 1
-    
+
+    sheet.delete_rows(1, sheet.max_row)
+    for unique_row in unique_rows:
+        sheet.append(unique_row)
+
     save_workbook(workbook)
     
 def remove_duplicates_in_excel_eplus():
