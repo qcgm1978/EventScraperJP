@@ -46,7 +46,7 @@ def PiaInnerScrapper(url):
 
 def PiaScrapper(doc_Pia):
     i=0
-    concerts = []
+    Piaconcerts = []
     for div_Pia in doc_Pia.find_all("div"):
         a_tag_Pia = div_Pia.find("a")
         
@@ -71,14 +71,14 @@ def PiaScrapper(doc_Pia):
                 placePia = PiaInnerScrapper(linkPia)
                                  
                 if namePia and datePia and linkPia:
-                    if not any(linkPia in concert["Link"] for concert in concerts):
-                        concerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
+                    if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
+                        Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
                         #if i>1:
                         #    break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
-    return concerts
+    return Piaconcerts
 
 def OpenSheet(sheet_name, header):
     if os.path.exists(EXCEL_FILE):
@@ -155,15 +155,15 @@ doc_PiaM = doc_from_url("https://t.pia.jp/music/")
 doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
 doc_PiaE = doc_from_url("https://t.pia.jp/event/")
 
-concerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
+Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
 sheet_name = "Events_t.pia.jp"
 header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)    
     
-for concert in concerts:
-    sheet.append([concert["Name"], concert["Romaji"], concert["Place"], concert["Date"], concert["Link"]])
+for Piaconcert in Piaconcerts:
+    sheet.append([Piaconcert["Name"], Piaconcert["Romaji"], Piaconcert["Place"], Piaconcert["Date"], Piaconcert["Link"]])
     
 save_workbook(workbook)
 
@@ -173,10 +173,26 @@ style_sort_excel(sheet_name, "Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
+try:
+    doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
+except:
+    print("Error with eplus.jp. It's probably asleep. Trying again later.")
+    exit()
+try:
+    doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
+except:
+    print("Error with eplus.jp. It's probably asleep. Trying again later.")
+    exit()
+
+#def eplusScrapper(doc_eplus):
+
+
+#Eplusconcerts = eplusScrapper(doc_eplus_april) + eplusScrapper(doc_eplus_may)
+
 sheet_name = "Events_eplus.jp"
 header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
-for concert in concerts:
-    sheet.append([concert["Name"], concert["Romaji"], concert["Place"], concert["Date"], concert["Date"], concert["Link"]])
+#for Eplusconcert in Eplusconcerts:
+#    sheet.append([Eplusconcerts["Name"], Eplusconcerts["Romaji"], Eplusconcerts["Place"], Eplusconcerts["Date"], Eplusconcerts["Date"], Eplusconcerts["Link"]])
 save_workbook(workbook)
