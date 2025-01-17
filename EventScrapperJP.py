@@ -250,7 +250,11 @@ except:
     print("Error with eplus.jp. It's probably asleep. Trying again later.")
     exit()
 
-Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+try:
+    Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+except:
+    print("Error with eplus.jp. It's probably asleep. Trying again later.")
+    exit()
 
 sheet_name = "Events_eplus.jp"
 header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
