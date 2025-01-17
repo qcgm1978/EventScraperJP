@@ -74,13 +74,13 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
                         Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        if i>1:
-                            break #tester
+                        #if i>1:
+                        #    break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
-def eplusScrapper(doc_eplus, month): 
+def eplusScrapper(doc_eplus, month): #fix the dates edge case
     i=0
     Eplusconcerts = []
     li_eplus = doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last")
@@ -117,8 +117,8 @@ def eplusScrapper(doc_eplus, month):
                         if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
                             Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date": dateEplus, "Link": linkEplus})
                             i+=1
-                            # if i>1:
-                            #     break #tester
+                            #if i>1:
+                            #    break #tester
                             print(i)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
@@ -140,30 +140,44 @@ def OpenSheet(sheet_name, header):
 def remove_duplicates_in_excel_pia():
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook["Events_t.pia.jp"]
-    rows = list(sheet.iter_rows(values_only=True))
-    headers = rows[0]
-    unique_rows = [headers]
-
+    
     seen = set()
-    for row in rows[1:]:
-        link = row[4] #Change if columns moved
-        if link not in seen:
-            unique_rows.append(row)
+    
+    row_number = 2
+    while row_number <= sheet.max_row:
+        link = sheet.cell(row=row_number, column=5).value  #Link column (adjust if moved)
+        
+        if link in seen:
+            sheet.delete_rows(row_number)
+        else:
             seen.add(link)
-
-    sheet.delete_rows(1, sheet.max_row)
-    for unique_row in unique_rows:
-        sheet.append(unique_row)
-
+            row_number += 1
+    
     save_workbook(workbook)
     
 def remove_duplicates_in_excel_eplus():
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook["Events_eplus.jp"]
-    rows = list(sheet.iter_rows(values_only=True))
-    headers = rows[0]
-    unique_rows = [headers]
-
+    
+    seen = {}
+    
+    row_number = 2
+    while row_number <= sheet.max_row:
+        name = sheet.cell(row=row_number, column=1).value
+        ending_date = sheet.cell(row=row_number, column=5).value
+        
+        if name in seen:
+            original_row = seen[name]
+            original_ending_date = sheet.cell(row=original_row, column=5).value
+            if ending_date > original_ending_date:
+                sheet.cell(row=original_row, column=5).value = ending_date
+            sheet.delete_rows(row_number)
+        else:
+            seen[name] = row_number
+            row_number += 1
+    
+    save_workbook(workbook)
+    
 def style_sort_excel(sheet_name, sorting_column):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
@@ -247,8 +261,8 @@ for Eplusconcert in Eplusconcerts:
     sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date"], Eplusconcert["Date"], Eplusconcert["Link"]])
 save_workbook(workbook)
 
+remove_duplicates_in_excel_eplus()
 
-#remove_duplicates_in_excel_eplus()
-style_sort_excel(sheet_name, "Beginning Date")
+style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning date?
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
