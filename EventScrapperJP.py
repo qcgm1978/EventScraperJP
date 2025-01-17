@@ -74,8 +74,8 @@ def PiaScrapper(doc_Pia):
                     if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
                         Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
                         i+=1
-                        #if i>1:
-                        #    break #tester
+                        if i>1:
+                            break #tester
                         print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
@@ -83,44 +83,43 @@ def PiaScrapper(doc_Pia):
 def eplusScrapper(doc_eplus, month): 
     i=0
     Eplusconcerts = []
-    for li_eplus in doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last"):
-        if li_eplus:
-                max_pages = int(li_eplus.get_text(strip=True))
-                print(f"Max pages: {max_pages}")
+    li_eplus = doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last")
+    if li_eplus:
+        max_pages = int(li_eplus.get_text(strip=True))
+        print(f"Max pages: {max_pages}")
+    
+        for page in range(1, max_pages+1):
+            url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
+            print(f"Scraping page: {url}")
+            doc_eplus = doc_from_url(url)
             
-                for page in range(1, max_pages+1):
-                    url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
-                    print(f"Scraping page: {url}")
-                    doc_eplus = doc_from_url(url)
+            ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
+            tickets = ticket_div.find_all("a")
+
+            for ticket in tickets:
+                nameEplus = (ticket.find("h3", class_="ticket-item__title")).get_text(strip=True)
                 
-                    for div_eplus in doc_eplus.find_all("div"):
-                        a_tag_eplus = div_eplus.find("a")
-                        if a_tag_eplus:
-                            header_eplus = a_tag_eplus.find("header")
-                            if header_eplus:
-                                name_eplus = header_eplus.find("h3")
-                                nameEplus = name_eplus.get_text(strip=True) if name_eplus else None
-                                if nameEplus:
-                                    romajiEplus = convert_to_romaji(nameEplus)
-                                else:
-                                    romajiEplus = None
-                                date_year = a_tag_eplus.find("span", class_="ticket-item__yyyy")
-                                date_mmdd = a_tag_eplus.find("span", class_="ticket-item__mmdd")
-                                dateEplus = (
-                                    f"{date_year.get_text(strip=True)}{date_mmdd.get_text(strip=True)}" 
-                                    if date_year and date_mmdd else None)      
-                                div_eplus_venue = a_tag_eplus.find("div", class_="ticket-item__venue")
-                                if div_eplus_venue:
-                                    place_eplus = div_eplus_venue.find("p")
-                                    placeEplus = place_eplus.get_text(strip=True) if place_eplus else None
-                                linkEplus = "https://eplus.jp" + a_tag_eplus.get("href") if a_tag_eplus else None
-                                if nameEplus and dateEplus and linkEplus:
-                                    if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
-                                        Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date": dateEplus, "Link": linkEplus})
-                                        i+=1
-                                        #if i>1:
-                                        #    break #tester
-                                        print(i)    
+                if nameEplus:
+                    romajiEplus = convert_to_romaji(nameEplus)
+                else:
+                    romajiEplus = None
+                
+                date_year = ticket.find("span", class_="ticket-item__yyyy")
+                date_mmdd = ticket.find("span", class_="ticket-item__mmdd")
+                dateEplus = (f"{date_year.get_text(strip=True)}{date_mmdd.get_text(strip=True)}" 
+                             if date_year and date_mmdd else None)
+                div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
+                if div_eplus_venue:
+                    place_eplus = div_eplus_venue.find("p")
+                    placeEplus = place_eplus.get_text(strip=True) 
+                    linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
+                    if nameEplus and dateEplus and linkEplus:
+                        if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
+                            Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date": dateEplus, "Link": linkEplus})
+                            i+=1
+                            # if i>1:
+                            #     break #tester
+                            print(i)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
@@ -157,6 +156,13 @@ def remove_duplicates_in_excel_pia():
         sheet.append(unique_row)
 
     save_workbook(workbook)
+    
+def remove_duplicates_in_excel_eplus():
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    sheet = workbook["Events_eplus.jp"]
+    rows = list(sheet.iter_rows(values_only=True))
+    headers = rows[0]
+    unique_rows = [headers]
 
 def style_sort_excel(sheet_name, sorting_column):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
@@ -241,6 +247,8 @@ for Eplusconcert in Eplusconcerts:
     sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date"], Eplusconcert["Date"], Eplusconcert["Link"]])
 save_workbook(workbook)
 
+
+#remove_duplicates_in_excel_eplus()
 style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
