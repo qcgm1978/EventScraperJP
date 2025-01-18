@@ -244,7 +244,7 @@ def remove_duplicates_in_excel_eplus():
     
     save_workbook(workbook)
     
-def style_sort_excel(sheet_name, sorting_column):
+def style_sort_excel(sheet_name, sorting_column): #fix data sorting problem
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
     row_count = sheet.max_row
@@ -323,7 +323,7 @@ save_workbook(workbook)
 
 remove_duplicates_in_excel_eplus()
 
-style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning date?
+style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
 
