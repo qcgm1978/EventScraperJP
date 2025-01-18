@@ -276,8 +276,27 @@ print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
 def ltikeScrapper(doc_ltike):
     i=0
     ltikeconcerts = []
-
-            
+    pagination_position = doc_ltike.find("p", class_="Pagination__position")
+    text = pagination_position.get_text(strip=True)
+    match = re.search(r"（(\d+)ページ中）", text)
+    if match:
+        max_pages = int(match.group(1))
+        print(f"Max pages: {max_pages}")
+    
+    for page in range(0, max_pages+1):
+        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511&page={page}&ptabflg=0"
+        print(f"Scraping page: {page+1}")
+        doc_eplus = doc_from_url(url)
+    
+    tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
+    for ticket in tickets:
+        nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
+    
+        if nameltike:
+            romajiEplus = convert_to_romaji(nameltike)
+        else:
+            romajiEplus = None
+      
     #        if name_ltike and date_ltike and link_ltike:
     #            if not any(link_ltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
     #                ltikeconcerts.append({"Name": name_ltike, "Romaji": romaji_ltike, "Place": place_ltike, "Date": date_ltike, "Link": link_ltike})
@@ -288,11 +307,13 @@ def ltikeScrapper(doc_ltike):
     #print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
-doc_ltike_events = doc_from_url("https://l-tike.com/event/")
-doc_ltike_concerts = doc_from_url("https://l-tike.com/concert/")
+#doc_ltike_events = doc_from_url("https://l-tike.com/event/")
+#doc_ltike_concerts = doc_from_url("https://l-tike.com/concert/")
+doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511")
 
 try:
-    ltikeconcerts = ltikeScrapper(doc_ltike_events) + ltikeScrapper(doc_ltike_concerts)
+    #ltikeconcerts = ltikeScrapper(doc_ltike_events) + ltikeScrapper(doc_ltike_concerts)
+    ltikeconcerts = ltikeScrapper(doc_ltike_search)
 except:
     print("Error with pia.jp. It's probably asleep. Trying again later.")
     exit()
