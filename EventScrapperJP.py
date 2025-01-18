@@ -6,6 +6,7 @@ import pykakasi
 import pandas as pd
 import time
 import os
+import random
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
@@ -26,10 +27,23 @@ def convert_to_romaji(japanese_text):
     return romaji_text
 
 def doc_from_url(url):
-    pagePia = requests.get(url)
-    pagePia.encoding = 'utf-8'
-    html_content_Pia = pagePia.text
-    return BeautifulSoup(html_content_Pia, "html.parser")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "pl,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+    }
+    print(f"Scraping page: {url}")
+    while True:
+        try:
+            page = requests.get(url, headers=headers)
+            page.encoding = 'utf-8'
+            html_content_Pia = page.text
+            print("Page scraped successfully.")
+            return BeautifulSoup(html_content_Pia, "html.parser")
+        except:
+            print("Error with the page. Retrying...")
+            time.sleep(random.randint(20, 60))
 
 def PiaInnerScrapper(url):
     Inner_doc_Pia = doc_from_url(url)
@@ -271,7 +285,7 @@ style_sort_excel(sheet_name, "Beginning Date") #maybe a problem with beginning d
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
 
-## Here we start scrapping l-tike ##
+# Here we start scrapping l-tike ##
 
 def ltikeScrapper(doc_ltike):
     i=0
@@ -284,51 +298,50 @@ def ltikeScrapper(doc_ltike):
         print(f"Max pages: {max_pages}")
     
     for page in range(0, max_pages+1):
-        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511&page={page}&ptabflg=0"
+        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511&pdate_to=20250511&page={page}&ptabflg=0"
         print(f"Scraping page: {page+1}")
-        doc_eplus = doc_from_url(url)
+        doc_ltike = doc_from_url(url)
     
-    tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
-    for ticket in tickets:
-        nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
-    
-        if nameltike:
-            romajiltike = convert_to_romaji(nameltike)
-        else:
-            romajiltike = None
+        tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
+        for ticket in tickets:
+            nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
         
-        title = tickets.find("dt", class_="ResultBox__informationTitle").text.strip()
-        text = tickets.find("dt", class_="ResultBox__informationText").text.strip()
-    
-        if "公演日" in title:  # Check if the title is for the date
-            dateltike = text
-        elif "会場" in title:  # Check if the title is for the place
-            placeltike = text
+            if nameltike:
+                romajiltike = convert_to_romaji(nameltike)
+            else:
+                romajiltike = None
+            info_block = ticket.find("dl", class_="ResultBox__informations")
+            dateltike = None
+            placeltike = None
+            if info_block:
+                    # Find date and place from the <dl> block
+                    date_block = info_block.find("div", class_="ResultBox__information")
+                    if date_block and "公演日" in date_block.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                        dateltike = date_block.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+
+                    place_block = info_block.find_all("div", class_="ResultBox__information")
+                    for place in place_block:
+                        if "会場" in place.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                            placeltike = place.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+
+            
+            linkltike = "https://l-tike.com/search/?keyword=" + nameltike
         
-        linkltike = "https://l-tike.com/search/?keyword=" + nameltike
-      
-        if nameltike and dateltike and linkltike:
-            if not any(linkltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
-                ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
-                i+=1
-                #if i>1:
-                #    break #tester
-                print(i)
+            if nameltike and dateltike and linkltike:
+                if not any(linkltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
+                    ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
+                    i+=1
+                    #if i>1:
+                    #    break #tester
+                    print(i)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
-#doc_ltike_events = doc_from_url("https://l-tike.com/event/")
-#doc_ltike_concerts = doc_from_url("https://l-tike.com/concert/")
 doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511")
 
-try:
-    #ltikeconcerts = ltikeScrapper(doc_ltike_events) + ltikeScrapper(doc_ltike_concerts)
-    ltikeconcerts = ltikeScrapper(doc_ltike_search)
-except:
-    print("Error with pia.jp. It's probably asleep. Trying again later.")
-    exit()
-    
-sheet_name = "Events_l-tike.jp"
+ltikeconcerts = ltikeScrapper(doc_ltike_search)
+
+sheet_name = "Events_l-tike.com"
 header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
