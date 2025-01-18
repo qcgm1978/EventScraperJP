@@ -293,18 +293,28 @@ def ltikeScrapper(doc_ltike):
         nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
     
         if nameltike:
-            romajiEplus = convert_to_romaji(nameltike)
+            romajiltike = convert_to_romaji(nameltike)
         else:
-            romajiEplus = None
+            romajiltike = None
+        
+        title = tickets.find("dt", class_="ResultBox__informationTitle").text.strip()
+        text = tickets.find("dt", class_="ResultBox__informationText").text.strip()
+    
+        if "公演日" in title:  # Check if the title is for the date
+            dateltike = text
+        elif "会場" in title:  # Check if the title is for the place
+            placeltike = text
+        
+        linkltike = "https://l-tike.com/search/?keyword=" + nameltike
       
-    #        if name_ltike and date_ltike and link_ltike:
-    #            if not any(link_ltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
-    #                ltikeconcerts.append({"Name": name_ltike, "Romaji": romaji_ltike, "Place": place_ltike, "Date": date_ltike, "Link": link_ltike})
-    #                i+=1
-    #                #if i>1:
-    #                #    break #tester
-    #                print(i)
-    #print(f"Finished scraping current site. Proceeding to the next one.")
+        if nameltike and dateltike and linkltike:
+            if not any(linkltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
+                ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
+                i+=1
+                #if i>1:
+                #    break #tester
+                print(i)
+    print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
 #doc_ltike_events = doc_from_url("https://l-tike.com/event/")
@@ -317,3 +327,18 @@ try:
 except:
     print("Error with pia.jp. It's probably asleep. Trying again later.")
     exit()
+    
+sheet_name = "Events_l-tike.jp"
+header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
+
+workbook, sheet = OpenSheet(sheet_name, header)
+
+for ltikeconcert in ltikeconcerts:
+    sheet.append([ltikeconcert["Name"], ltikeconcert["Romaji"], ltikeconcert["Place"], ltikeconcert["Date"], ltikeconcert["Link"]])
+    
+save_workbook(workbook)
+
+style_sort_excel(sheet_name, "Date")
+
+print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
+    
