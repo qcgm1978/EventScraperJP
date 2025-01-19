@@ -6,6 +6,7 @@ import pykakasi
 import pandas as pd
 import time
 import os
+from datetime import datetime
 import random
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -104,7 +105,7 @@ def eplusScrapper(doc_eplus, month): #fix the dates edge case
     
         for page in range(1, max_pages+1):
             url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
-            print(f"Scraping page: {url}")
+            print(f"Scraping page: {page}")
             doc_eplus = doc_from_url(url)
             
             ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
@@ -204,20 +205,26 @@ def OpenSheet(sheet_name, header):
 def remove_duplicates_in_excel_pia():
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook["Events_t.pia.jp"]
-    rows = list(sheet.iter_rows(values_only=True))
-    headers = rows[0]
-    unique_rows = [headers]
 
-    seen = set()
-    for row in rows[1:]:
-        link = row[4] #Change if columns moved
-        if link not in seen:
-            unique_rows.append(row)
-            seen.add(link)
-
-    sheet.delete_rows(1, sheet.max_row)
-    for unique_row in unique_rows:
-        sheet.append(unique_row)
+    #seen = set()
+    #for row in rows[1:]:
+    #    link = row[5] #Change if columns moved
+    #    if link not in seen:
+    #        unique_rows.append(row)
+    #        seen.add(link)
+#
+    #sheet.delete_rows(1, sheet.max_row)
+    #for unique_row in unique_rows:
+    #    sheet.append(unique_row)
+    seen = {}
+    row_number = 2
+    while row_number <= sheet.max_row:
+        link = sheet.cell(row=row_number, column=6).value
+        if link in seen:
+            sheet.delete_rows(row_number)
+        else:
+            seen[link] = row_number
+            row_number += 1
 
     save_workbook(workbook)
     
@@ -290,18 +297,18 @@ doc_PiaE = doc_from_url("https://t.pia.jp/event/")
 Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
 sheet_name = "Events_t.pia.jp"
-header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
+header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)    
     
 for Piaconcert in Piaconcerts:
-    sheet.append([Piaconcert["Name"], Piaconcert["Romaji"], Piaconcert["Place"], Piaconcert["Date"], Piaconcert["Link"]])
+    sheet.append([Piaconcert["Name"], Piaconcert["Romaji"], Piaconcert["Place"], Piaconcert["Date"], Piaconcert["Date"], Piaconcert["Link"]])
     
 save_workbook(workbook)
 
 remove_duplicates_in_excel_pia()
 
-style_sort_excel(sheet_name, "Date")
+style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
 
@@ -334,16 +341,16 @@ doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5
 ltikeconcerts = ltikeScrapper(doc_ltike_search)
 
 sheet_name = "Events_l-tike.com"
-header = ["Name", "Romaji", "Place", "Date", "Link"] #If new column added, change.
+header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
 
 workbook, sheet = OpenSheet(sheet_name, header)
 
 for ltikeconcert in ltikeconcerts:
-    sheet.append([ltikeconcert["Name"], ltikeconcert["Romaji"], ltikeconcert["Place"], ltikeconcert["Date"], ltikeconcert["Link"]])
+    sheet.append([ltikeconcert["Name"], ltikeconcert["Romaji"], ltikeconcert["Place"], ltikeconcert["Date"], ltikeconcert["Date"], ltikeconcert["Link"]])
     
 save_workbook(workbook)
 
-style_sort_excel(sheet_name, "Date")
+style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
     
