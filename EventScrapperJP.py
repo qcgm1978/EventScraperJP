@@ -88,12 +88,11 @@ def PiaScrapper(doc_Pia):
                 placePia = PiaInnerScrapper(linkPia)
                                  
                 if namePia and datePia and linkPia:
-                    if not any(linkPia in Piaconcert["Link"] for Piaconcert in Piaconcerts):
-                        Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
-                        i+=1
-                        #if i>1:
-                        #    break #tester
-                        print(i)                       
+                    Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
+                    i+=1
+                    #if i>1:
+                    #    break #tester
+                    print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
@@ -139,12 +138,11 @@ def eplusScrapper(doc_eplus, month):
                     placeEplus = place_eplus.get_text(strip=True) 
                     linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
                     if nameEplus and linkEplus:
-                        if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
-                            Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
-                            i+=1
-                            #if i>1:
-                            #    break #tester
-                            print(i)
+                        Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
+                        i+=1
+                        #if i>1:
+                        #    break #tester
+                        print(i)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
@@ -159,7 +157,7 @@ def ltikeScrapper(doc_ltike):
         print(f"Max pages: {max_pages}")
     
     for page in range(0, max_pages+1):
-        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511&pdate_to=20250511&page={page}&ptabflg=0"
+        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page={page}&ptabflg=0"
         print(f"Scraping page: {page+1}")
         doc_ltike = doc_from_url(url)
     
@@ -188,13 +186,13 @@ def ltikeScrapper(doc_ltike):
             
             linkltike = "https://l-tike.com/search/?keyword=" + nameltike
         
-            if nameltike and dateltike and linkltike:
-                if not any(linkltike in ltikeconcert["Link"] for ltikeconcert in ltikeconcerts):
-                    ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
-                    i+=1
-                    #if i>1:
-                    #    break #tester
-                    print(i)
+            if nameltike:
+                ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
+                i+=1
+                #if i>1:
+                #    break #tester
+                #print(i)
+                print (romajiltike, placeltike)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
@@ -212,9 +210,9 @@ def OpenSheet(sheet_name):
     sheet = workbook[sheet_name]
     return workbook, sheet
 
-def remove_duplicates_in_excel_pia():
+def remove_duplicates_in_excel_link(sheet_name="Events_t.pia.jp"):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
-    sheet = workbook["Events_t.pia.jp"]
+    sheet = workbook[sheet_name]
     
     seen = {}
     row_number = 2
@@ -228,25 +226,28 @@ def remove_duplicates_in_excel_pia():
 
     save_workbook(workbook)
     
-def remove_duplicates_in_excel_eplus():
+def remove_duplicates_in_excel_name_place(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
-    sheet = workbook["Events_eplus.jp"]
+    sheet = workbook[sheet_name]
     
     seen = {}
     
     row_number = 2
     while row_number <= sheet.max_row:
         name = sheet.cell(row=row_number, column=1).value
+        place = sheet.cell(row=row_number, column=3).value
         ending_date = sheet.cell(row=row_number, column=5).value
         
-        if name in seen:
-            original_row = seen[name]
+        identifier = (name, place)
+        
+        if identifier in seen:
+            original_row = seen[identifier]
             original_ending_date = sheet.cell(row=original_row, column=5).value
             if ending_date > original_ending_date:
                 sheet.cell(row=original_row, column=5).value = ending_date
             sheet.delete_rows(row_number)
         else:
-            seen[name] = row_number
+            seen[identifier] = row_number
             row_number += 1
     
     save_workbook(workbook)
@@ -369,7 +370,7 @@ def combine_sheets(sheet_names):
         combined_sheet.append(r)
         
     save_workbook(workbook)
-    style_sort_excel("Events_combined", "Beginning Date")
+    style_sort_excel("Events_combined")
     print("Combined all sheets into 'Events_combined'.")
 
 def pia_jp_scrap():
@@ -390,7 +391,7 @@ def pia_jp_scrap():
         
     save_workbook(workbook)
 
-    remove_duplicates_in_excel_pia()
+    remove_duplicates_in_excel_link(sheet_name="Events_t.pia.jp")
     splitter_pia(sheet_name)
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
@@ -413,7 +414,7 @@ def eplus_jp_scrap():
         sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date_beginning"], Eplusconcert["Date_ending"], Eplusconcert["Link"]])
     save_workbook(workbook)
 
-    remove_duplicates_in_excel_eplus()
+    remove_duplicates_in_excel_name_place(sheet_name)
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
 
@@ -422,7 +423,7 @@ def eplus_jp_scrap():
 def ltike_jp_scrap():
     # Here we start scrapping l-tike ##
 
-    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511")
+    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page=0&ptabflg=0")
 
     ltikeconcerts = ltikeScrapper(doc_ltike_search)
 
@@ -435,6 +436,7 @@ def ltike_jp_scrap():
         
     save_workbook(workbook)
 
+    remove_duplicates_in_excel_name_place(sheet_name)
     splitter_ltike(sheet_name)
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
@@ -442,8 +444,8 @@ def ltike_jp_scrap():
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
 sheet_names = []
-pia = True
-eplus = True
+pia = False
+eplus = False
 ltike = True
 
 if not (pia or eplus or ltike):
