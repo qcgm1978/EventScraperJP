@@ -444,8 +444,8 @@ def ltike_jp_scrap():
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
 sheet_names = []
-pia = False
-eplus = False
+pia = True
+eplus = True
 ltike = True
 
 if not (pia or eplus or ltike):
