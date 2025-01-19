@@ -309,7 +309,7 @@ def cleaner(sheet_name):
     save_workbook(workbook)
     print("Finished cleaning dates in {sheet_name}.")
 
-def style_sort_excel(sheet_name, sorting_column):
+def style_sort_excel(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
     row_count = sheet.max_row
@@ -319,7 +319,7 @@ def style_sort_excel(sheet_name, sorting_column):
     headers = df.iloc[0]
     df = df[1:]
     df.columns = headers
-    df = df.sort_values(by=sorting_column, ascending=True)
+    df = df.sort_values(by="Beginning Date", ascending=True)
     sheet.delete_rows(1, sheet.max_row)
     for row in [df.columns.tolist()] + df.values.tolist():
        sheet.append(row)
@@ -393,7 +393,7 @@ def pia_jp_scrap():
     remove_duplicates_in_excel_pia()
     splitter_pia(sheet_name)
     cleaner(sheet_name)
-    style_sort_excel(sheet_name, "Beginning Date")
+    style_sort_excel(sheet_name)
 
     print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
     
@@ -415,7 +415,7 @@ def eplus_jp_scrap():
 
     remove_duplicates_in_excel_eplus()
     cleaner(sheet_name)
-    style_sort_excel(sheet_name, "Beginning Date")
+    style_sort_excel(sheet_name)
 
     print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
     
@@ -437,7 +437,7 @@ def ltike_jp_scrap():
 
     splitter_ltike(sheet_name)
     cleaner(sheet_name)
-    style_sort_excel(sheet_name, "Beginning Date")
+    style_sort_excel(sheet_name)
 
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
