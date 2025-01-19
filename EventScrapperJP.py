@@ -92,7 +92,7 @@ def PiaScrapper(doc_Pia):
                     i+=1
                     #if i>1:
                     #    break #tester
-                    print(i)                       
+                    #print(i)                       
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
@@ -142,7 +142,7 @@ def eplusScrapper(doc_eplus, month):
                         i+=1
                         #if i>1:
                         #    break #tester
-                        print(i)
+                        #print(i)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
