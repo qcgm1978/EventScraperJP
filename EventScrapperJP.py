@@ -120,17 +120,19 @@ def eplusScrapper(doc_eplus, month):
                 else:
                     romajiEplus = None
                 
-                date_year = ticket.find("span", class_="ticket-item__yyyy")
-                date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  # Find all dates
+                date_year = ticket.find_all("span", class_="ticket-item__yyyy") 
+                date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  
                 dateEplus_beginning = None
                 dateEplus_ending = None
 
                 if date_year and date_mmdd:
-                    if len(date_mmdd) >= 1:
-                        dateEplus_beginning = f"{date_year.get_text(strip=True)}{date_mmdd[0].get_text(strip=True)}"
-                        dateEplus_ending = dateEplus_beginning
-                    if len(date_mmdd) > 1:
-                        dateEplus_ending = f"{date_year.get_text(strip=True)}{date_mmdd[1].get_text(strip=True)}"
+                    for idx, (year, mmdd) in enumerate(zip(date_year, date_mmdd)):
+                        year_text = year.get_text(strip=True)
+                        mmdd_text = mmdd.get_text(strip=True)
+                        if idx == 0:
+                            dateEplus_beginning = f"{year_text}{mmdd_text}"
+                        if idx == len(date_mmdd) - 1:
+                            dateEplus_ending = f"{year_text}{mmdd_text}"
                         
                 div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
                 if div_eplus_venue:
@@ -444,9 +446,9 @@ def ltike_jp_scrap():
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
 sheet_names = []
-pia = True
+pia = False
 eplus = True
-ltike = True
+ltike = False
 
 if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
