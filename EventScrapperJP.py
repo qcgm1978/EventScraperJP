@@ -192,7 +192,7 @@ def ltikeScrapper(doc_ltike):
                 #if i>1:
                 #    break #tester
                 #print(i)
-                print (romajiltike, placeltike)
+                #print (romajiltike, placeltike)
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
@@ -267,7 +267,7 @@ def splitter_pia(sheet_name):
             sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
 
     save_workbook(workbook)
-    print("Finished splitting dates in {sheet_name}.")
+    print(f"Finished splitting dates in {sheet_name}.")
     
 def splitter_ltike(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
@@ -289,7 +289,7 @@ def splitter_ltike(sheet_name):
                 sheet.cell(row=row, column=4).value = date_value.strip() 
 
     save_workbook(workbook)
-    print("Finished splitting dates in {sheet_name}.")
+    print(f"Finished splitting dates in {sheet_name}.")
     
 def cleaner(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
@@ -308,7 +308,7 @@ def cleaner(sheet_name):
                     print(f"Row {row}, Column {column_index}: Invalid date '{cell_value}' - {e}")
 
     save_workbook(workbook)
-    print("Finished cleaning dates in {sheet_name}.")
+    print(f"Finished cleaning dates in {sheet_name}.")
 
 def style_sort_excel(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
