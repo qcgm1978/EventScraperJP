@@ -329,7 +329,10 @@ def style_sort_excel(sheet_name, sorting_column):
         sheet.cell(row=1, column=i+1).font = title_row_style
     dim_holder = DimensionHolder(worksheet=sheet)
     for col in range(sheet.min_column, sheet.max_column + 1):
-        dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=35)
+        if col == 6:
+            dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=160)
+        else:
+            dim_holder[get_column_letter(col)] = ColumnDimension(sheet, min=col, max=col, width=35)
     sheet.column_dimensions = dim_holder
     
     for z in range (0, column_count):
