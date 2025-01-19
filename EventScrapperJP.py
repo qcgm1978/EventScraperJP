@@ -216,6 +216,8 @@ def remove_duplicates_in_excel_pia():
     #sheet.delete_rows(1, sheet.max_row)
     #for unique_row in unique_rows:
     #    sheet.append(unique_row)
+    #Old method above 
+    
     seen = {}
     row_number = 2
     while row_number <= sheet.max_row:
@@ -251,7 +253,70 @@ def remove_duplicates_in_excel_eplus():
     
     save_workbook(workbook)
     
-def style_sort_excel(sheet_name, sorting_column): #fix data sorting problem
+def splitter_pia(sheet_name):
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    sheet = workbook[sheet_name]
+    
+    for row in range(2, sheet.max_row + 1):  # Skip the header row
+        date_value = sheet.cell(row=row, column=4).value  # Beginning Date column
+        
+        if date_value and "～" in date_value:
+            beginning_date, ending_date = date_value.split("～", 1)
+            sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
+            sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+        elif date_value:
+            sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
+
+    save_workbook(workbook)
+    print("Finished splitting dates in {sheet_name}.")
+    
+def splitter_ltike(sheet_name):
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    sheet = workbook[sheet_name]
+    
+    for row in range(2, sheet.max_row + 1):  # Skip the header row
+        date_value = sheet.cell(row=row, column=4).value  # Beginning Date column
+        
+        if date_value:
+            if "～" in date_value:
+                beginning_date, ending_date = date_value.split("～", 1)
+                sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
+                sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+            elif "・" in date_value:
+                beginning_date, ending_date = date_value.split("・", 1)
+                sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
+                sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+            elif date_value:
+                sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
+
+    save_workbook(workbook)
+    print("Finished splitting dates in {sheet_name}.")
+    
+def cleaner(sheet_name):
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    sheet = workbook[sheet_name]
+
+    for row in range(2, sheet.max_row + 1):  # Skip the header row
+        for column_index in [4, 5]:  # Columns 4 and 5 for beginning and ending dates
+            cell_value = sheet.cell(row=row, column=column_index).value
+            if cell_value:
+                try: 
+                    # Remove everything after and including the first '('
+                    cleaned_value = cell_value.split('(', 1)[0].strip()
+            
+                    # Convert the cleaned value to a date object
+                    date_value = datetime.strptime(cleaned_value, "%Y/%m/%d")
+                    # Format the date as "YYYY-MM-DD" string
+                    formatted_date = date_value.strftime("%Y-%m-%d")
+                    # Assign the cleaned and formatted date back to the cell
+                    sheet.cell(row=row, column=column_index).value = formatted_date
+                except ValueError as e:
+                    print(f"Row {row}, Column {column_index}: Invalid date '{cell_value}' - {e}")
+
+    save_workbook(workbook)
+    print("Finished cleaning dates in {sheet_name}.")
+
+def style_sort_excel(sheet_name, sorting_column):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
     row_count = sheet.max_row
@@ -308,6 +373,8 @@ save_workbook(workbook)
 
 remove_duplicates_in_excel_pia()
 
+splitter_pia(sheet_name)
+cleaner(sheet_name)
 style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
@@ -329,7 +396,7 @@ for Eplusconcert in Eplusconcerts:
 save_workbook(workbook)
 
 remove_duplicates_in_excel_eplus()
-
+cleaner(sheet_name)
 style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
@@ -350,6 +417,8 @@ for ltikeconcert in ltikeconcerts:
     
 save_workbook(workbook)
 
+splitter_ltike(sheet_name)
+cleaner(sheet_name)
 style_sort_excel(sheet_name, "Beginning Date")
 
 print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
