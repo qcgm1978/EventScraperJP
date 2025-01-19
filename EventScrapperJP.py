@@ -11,7 +11,9 @@ import random
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
+from openpyxl.utils.dataframe import dataframe_to_rows
 EXCEL_FILE = "EventsJP2025.xlsx"
+HEADER = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"]
 
 def save_workbook(workbook):    
     try:
@@ -95,7 +97,7 @@ def PiaScrapper(doc_Pia):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
-def eplusScrapper(doc_eplus, month): #fix the dates edge case
+def eplusScrapper(doc_eplus, month):
     i=0
     Eplusconcerts = []
     li_eplus = doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last")
@@ -120,17 +122,25 @@ def eplusScrapper(doc_eplus, month): #fix the dates edge case
                     romajiEplus = None
                 
                 date_year = ticket.find("span", class_="ticket-item__yyyy")
-                date_mmdd = ticket.find("span", class_="ticket-item__mmdd")
-                dateEplus = (f"{date_year.get_text(strip=True)}{date_mmdd.get_text(strip=True)}" 
-                             if date_year and date_mmdd else None)
+                date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  # Find all dates
+                dateEplus_beginning = None
+                dateEplus_ending = None
+
+                if date_year and date_mmdd:
+                    if len(date_mmdd) >= 1:
+                        dateEplus_beginning = f"{date_year.get_text(strip=True)}{date_mmdd[0].get_text(strip=True)}"
+                        dateEplus_ending = dateEplus_beginning
+                    if len(date_mmdd) > 1:
+                        dateEplus_ending = f"{date_year.get_text(strip=True)}{date_mmdd[1].get_text(strip=True)}"
+                        
                 div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
                 if div_eplus_venue:
                     place_eplus = div_eplus_venue.find("p")
                     placeEplus = place_eplus.get_text(strip=True) 
                     linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
-                    if nameEplus and dateEplus and linkEplus:
+                    if nameEplus and linkEplus:
                         if not any(linkEplus in Eplusconcert["Link"] for Eplusconcert in Eplusconcerts):
-                            Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date": dateEplus, "Link": linkEplus})
+                            Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
                             i+=1
                             #if i>1:
                             #    break #tester
@@ -188,7 +198,7 @@ def ltikeScrapper(doc_ltike):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
-def OpenSheet(sheet_name, header):
+def OpenSheet(sheet_name):
     if os.path.exists(EXCEL_FILE):
         workbook = openpyxl.load_workbook(EXCEL_FILE)
     else:
@@ -198,25 +208,13 @@ def OpenSheet(sheet_name, header):
         sheet = workbook[sheet_name]
     else:
         sheet = workbook.create_sheet(title=sheet_name)
-        sheet.append(header) 
+        sheet.append(HEADER) 
     sheet = workbook[sheet_name]
     return workbook, sheet
 
 def remove_duplicates_in_excel_pia():
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook["Events_t.pia.jp"]
-
-    #seen = set()
-    #for row in rows[1:]:
-    #    link = row[5] #Change if columns moved
-    #    if link not in seen:
-    #        unique_rows.append(row)
-    #        seen.add(link)
-#
-    #sheet.delete_rows(1, sheet.max_row)
-    #for unique_row in unique_rows:
-    #    sheet.append(unique_row)
-    #Old method above 
     
     seen = {}
     row_number = 2
@@ -257,8 +255,8 @@ def splitter_pia(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
     
-    for row in range(2, sheet.max_row + 1):  # Skip the header row
-        date_value = sheet.cell(row=row, column=4).value  # Beginning Date column
+    for row in range(2, sheet.max_row + 1):
+        date_value = sheet.cell(row=row, column=4).value 
         
         if date_value and "～" in date_value:
             beginning_date, ending_date = date_value.split("～", 1)
@@ -274,20 +272,20 @@ def splitter_ltike(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
     
-    for row in range(2, sheet.max_row + 1):  # Skip the header row
-        date_value = sheet.cell(row=row, column=4).value  # Beginning Date column
+    for row in range(2, sheet.max_row + 1):
+        date_value = sheet.cell(row=row, column=4).value 
         
         if date_value:
             if "～" in date_value:
                 beginning_date, ending_date = date_value.split("～", 1)
-                sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
-                sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+                sheet.cell(row=row, column=4).value = beginning_date.strip()
+                sheet.cell(row=row, column=5).value = ending_date.strip()
             elif "・" in date_value:
                 beginning_date, ending_date = date_value.split("・", 1)
-                sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
-                sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+                sheet.cell(row=row, column=4).value = beginning_date.strip()
+                sheet.cell(row=row, column=5).value = ending_date.strip() 
             elif date_value:
-                sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
+                sheet.cell(row=row, column=4).value = date_value.strip() 
 
     save_workbook(workbook)
     print("Finished splitting dates in {sheet_name}.")
@@ -296,19 +294,14 @@ def cleaner(sheet_name):
     workbook = openpyxl.load_workbook(EXCEL_FILE)
     sheet = workbook[sheet_name]
 
-    for row in range(2, sheet.max_row + 1):  # Skip the header row
-        for column_index in [4, 5]:  # Columns 4 and 5 for beginning and ending dates
+    for row in range(2, sheet.max_row + 1):
+        for column_index in [4, 5]:
             cell_value = sheet.cell(row=row, column=column_index).value
             if cell_value:
                 try: 
-                    # Remove everything after and including the first '('
                     cleaned_value = cell_value.split('(', 1)[0].strip()
-            
-                    # Convert the cleaned value to a date object
                     date_value = datetime.strptime(cleaned_value, "%Y/%m/%d")
-                    # Format the date as "YYYY-MM-DD" string
                     formatted_date = date_value.strftime("%Y-%m-%d")
-                    # Assign the cleaned and formatted date back to the cell
                     sheet.cell(row=row, column=column_index).value = formatted_date
                 except ValueError as e:
                     print(f"Row {row}, Column {column_index}: Invalid date '{cell_value}' - {e}")
@@ -352,73 +345,116 @@ def style_sort_excel(sheet_name, sorting_column):
             l.fill = PatternFill(start_color="ACFFB8", end_color="ACFFB8", fill_type="solid")
     
     save_workbook(workbook)
-
-## Here we start scrapping pia.jp ##
-
-doc_PiaM = doc_from_url("https://t.pia.jp/music/")
-doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
-doc_PiaE = doc_from_url("https://t.pia.jp/event/")
-
-Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
-
-sheet_name = "Events_t.pia.jp"
-header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
-
-workbook, sheet = OpenSheet(sheet_name, header)    
     
-for Piaconcert in Piaconcerts:
-    sheet.append([Piaconcert["Name"], Piaconcert["Romaji"], Piaconcert["Place"], Piaconcert["Date"], Piaconcert["Date"], Piaconcert["Link"]])
+def combine_sheets(sheet_names):
+    workbook = openpyxl.load_workbook(EXCEL_FILE)
+    combined_data = []
     
-save_workbook(workbook)
+    for sheet_name in sheet_names:
+        sheet = workbook[sheet_name]
+        data = pd.DataFrame(sheet.values)
+        data.columns = data.iloc[0]
+        data = data.drop(0) 
+        combined_data.append(data)
+    combined_df = pd.concat(combined_data, ignore_index=True)
+    if "Events_combined" in workbook.sheetnames:
+        del workbook["Events_combined"]
 
-remove_duplicates_in_excel_pia()
-splitter_pia(sheet_name)
-cleaner(sheet_name)
-style_sort_excel(sheet_name, "Beginning Date")
+    combined_sheet = workbook.create_sheet("Events_combined", 0)
 
-print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
+    for r in dataframe_to_rows(combined_df, index=False, header=True):
+        combined_sheet.append(r)
+        
+    save_workbook(workbook)
+    style_sort_excel("Events_combined", "Beginning Date")
+    print("Combined all sheets into 'Events_combined'.")
 
-## Here we start scrapping eplus.jp ##
+def pia_jp_scrap():
+    ## Here we start scrapping pia.jp ##
 
-doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
-doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
+    doc_PiaM = doc_from_url("https://t.pia.jp/music/")
+    doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
+    doc_PiaE = doc_from_url("https://t.pia.jp/event/")
 
-Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+    Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
 
-sheet_name = "Events_eplus.jp"
-header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
+    sheet_name = "Events_t.pia.jp"
 
-workbook, sheet = OpenSheet(sheet_name, header)
+    workbook, sheet = OpenSheet(sheet_name)    
+        
+    for Piaconcert in Piaconcerts:
+        sheet.append([Piaconcert["Name"], Piaconcert["Romaji"], Piaconcert["Place"], Piaconcert["Date"], Piaconcert["Date"], Piaconcert["Link"]])
+        
+    save_workbook(workbook)
 
-for Eplusconcert in Eplusconcerts:
-    sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date"], Eplusconcert["Date"], Eplusconcert["Link"]])
-save_workbook(workbook)
+    remove_duplicates_in_excel_pia()
+    splitter_pia(sheet_name)
+    cleaner(sheet_name)
+    style_sort_excel(sheet_name, "Beginning Date")
 
-remove_duplicates_in_excel_eplus()
-cleaner(sheet_name)
-style_sort_excel(sheet_name, "Beginning Date")
-
-print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
-
-# Here we start scrapping l-tike ##
-
-doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511")
-
-ltikeconcerts = ltikeScrapper(doc_ltike_search)
-
-sheet_name = "Events_l-tike.com"
-header = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"] #If new column added, change.
-
-workbook, sheet = OpenSheet(sheet_name, header)
-
-for ltikeconcert in ltikeconcerts:
-    sheet.append([ltikeconcert["Name"], ltikeconcert["Romaji"], ltikeconcert["Place"], ltikeconcert["Date"], ltikeconcert["Date"], ltikeconcert["Link"]])
+    print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
     
-save_workbook(workbook)
+def eplus_jp_scrap():
+    ## Here we start scrapping eplus.jp ##
 
-splitter_ltike(sheet_name)
-cleaner(sheet_name)
-style_sort_excel(sheet_name, "Beginning Date")
+    doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
+    doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
 
-print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
+    Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+
+    sheet_name = "Events_eplus.jp"
+
+    workbook, sheet = OpenSheet(sheet_name)
+
+    for Eplusconcert in Eplusconcerts:
+        sheet.append([Eplusconcert["Name"], Eplusconcert["Romaji"], Eplusconcert["Place"], Eplusconcert["Date_beginning"], Eplusconcert["Date_ending"], Eplusconcert["Link"]])
+    save_workbook(workbook)
+
+    remove_duplicates_in_excel_eplus()
+    cleaner(sheet_name)
+    style_sort_excel(sheet_name, "Beginning Date")
+
+    print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
     
+def ltike_jp_scrap():
+    # Here we start scrapping l-tike ##
+
+    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&tig=100%2C110%2C120%2C130%2C125%2C112%2C122%2C118%2C127%2C115%2C116%2C117%2C126%2C190%2C140%2C500%2C510%2C520%2C530%2C540%2C550%2C560%2C590&pdate_from=20250418&pdate_to=20250511")
+
+    ltikeconcerts = ltikeScrapper(doc_ltike_search)
+
+    sheet_name = "Events_l-tike.com"
+
+    workbook, sheet = OpenSheet(sheet_name)
+
+    for ltikeconcert in ltikeconcerts:
+        sheet.append([ltikeconcert["Name"], ltikeconcert["Romaji"], ltikeconcert["Place"], ltikeconcert["Date"], ltikeconcert["Date"], ltikeconcert["Link"]])
+        
+    save_workbook(workbook)
+
+    splitter_ltike(sheet_name)
+    cleaner(sheet_name)
+    style_sort_excel(sheet_name, "Beginning Date")
+
+    print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
+
+sheet_names = []
+pia = True
+eplus = True
+ltike = True
+
+if not (pia or eplus or ltike):
+    print("No websites selected. Exiting.")
+else:    
+    if pia:
+        pia_jp_scrap()
+        sheet_names.append("Events_t.pia.jp")
+    if eplus:
+        eplus_jp_scrap()
+        sheet_names.append("Events_eplus.jp")
+    if ltike:
+        ltike_jp_scrap()
+        sheet_names.append("Events_l-tike.com")
+
+    if len(sheet_names) > 1:
+        combine_sheets(sheet_names)
