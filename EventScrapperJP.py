@@ -372,7 +372,6 @@ for Piaconcert in Piaconcerts:
 save_workbook(workbook)
 
 remove_duplicates_in_excel_pia()
-
 splitter_pia(sheet_name)
 cleaner(sheet_name)
 style_sort_excel(sheet_name, "Beginning Date")
