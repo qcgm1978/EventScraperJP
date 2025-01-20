@@ -14,7 +14,12 @@ from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
-EXCEL_FILE = "EventsJP2025.xlsx"
+
+#If the front end allows it, the user might choose their own BASE_FOLDER. Then you should check if the BASE_FOLDER was chosen, if not, use the default one. 
+#Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScrapperJP" 
+username=os.getlogin()
+BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScrapperJP" 
+EXCEL_FILE = rf"{BASE_FOLDER}\EventsJP2025.xlsx"
 HEADER = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"]
 
 def save_workbook(workbook):    
@@ -233,6 +238,7 @@ def OpenSheet(sheet_name):
     if os.path.exists(EXCEL_FILE):
         workbook = openpyxl.load_workbook(EXCEL_FILE)
     else:
+        os.makedirs(BASE_FOLDER)
         workbook = openpyxl.Workbook()
         workbook.remove(workbook.active)
     if sheet_name in workbook.sheetnames:
@@ -294,10 +300,10 @@ def splitter_pia(sheet_name):
         
         if date_value and "～" in date_value:
             beginning_date, ending_date = date_value.split("～", 1)
-            sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
-            sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+            sheet.cell(row=row, column=4).value = beginning_date.strip()
+            sheet.cell(row=row, column=5).value = ending_date.strip() 
         elif date_value:
-            sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
+            sheet.cell(row=row, column=4).value = date_value.strip()
 
     save_workbook(workbook)
     print(f"Finished splitting dates in {sheet_name}.")
