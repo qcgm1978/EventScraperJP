@@ -6,8 +6,9 @@ import pykakasi
 import pandas as pd
 import time
 import os
-from datetime import datetime
+import concurrent.futures
 import random
+from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
@@ -374,18 +375,30 @@ def combine_sheets(sheet_names):
     save_workbook(workbook)
     style_sort_excel("Events_combined")
     print("Combined all sheets into 'Events_combined'.")
+    
+def OptiScrape_pia(url):
+    doc_Pia = doc_from_url(url)
+    return PiaScrapper(doc_Pia)
 
 def pia_jp_scrap():
     ## Here we start scrapping pia.jp ##
+    urls = [
+        "https://t.pia.jp/music/",
+        "https://t.pia.jp/anime/",
+        "https://t.pia.jp/event/"
+    ]
+    Piaconcerts = []
 
-    doc_PiaM = doc_from_url("https://t.pia.jp/music/")
-    doc_PiaA = doc_from_url("https://t.pia.jp/anime/")
-    doc_PiaE = doc_from_url("https://t.pia.jp/event/")
-
-    Piaconcerts = PiaScrapper(doc_PiaM) + PiaScrapper(doc_PiaA) + PiaScrapper(doc_PiaE)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_url = {executor.submit(OptiScrape_pia, url): url for url in urls}
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                Piaconcerts.extend(future.result())
+            except Exception as e:
+                print(f"Error scraping {url}: {e}")
 
     sheet_name = "Events_t.pia.jp"
-
     workbook, sheet = OpenSheet(sheet_name)    
         
     for Piaconcert in Piaconcerts:
@@ -447,8 +460,8 @@ def ltike_jp_scrap():
 
 sheet_names = []
 pia = True
-eplus = True
-ltike = True
+eplus = False
+ltike = False
 
 if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
