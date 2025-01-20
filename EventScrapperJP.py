@@ -238,7 +238,8 @@ def OpenSheet(sheet_name):
     if os.path.exists(EXCEL_FILE):
         workbook = openpyxl.load_workbook(EXCEL_FILE)
     else:
-        os.makedirs(BASE_FOLDER)
+        if not os.path.exists(BASE_FOLDER):
+            os.makedirs(BASE_FOLDER)
         workbook = openpyxl.Workbook()
         workbook.remove(workbook.active)
     if sheet_name in workbook.sheetnames:
@@ -522,3 +523,5 @@ else:
 
     if len(sheet_names) > 1:
         combine_sheets(sheet_names)
+
+print(f"All done! Your file has been saved to {EXCEL_FILE}.")
