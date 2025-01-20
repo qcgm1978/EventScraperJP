@@ -8,6 +8,7 @@ import time
 import os
 import concurrent.futures
 import random
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -97,9 +98,12 @@ def PiaScrapper(doc_Pia):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
-def eplusScrapper(doc_eplus, month):
+def eplusScrapper(month):
     i=0
     Eplusconcerts = []
+    url = f"https://eplus.jp/sf/event/month-0{month}"
+    doc_eplus = doc_from_url(url)
+    
     li_eplus = doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last")
     if li_eplus:
         max_pages = int(li_eplus.get_text(strip=True))
@@ -415,14 +419,22 @@ def pia_jp_scrap():
     
 def eplus_jp_scrap():
     ## Here we start scrapping eplus.jp ##
-
-    doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
-    doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
-
-    Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+    months = [4, 5]
+    Eplusconcerts = []
+    
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_month = {executor.submit(eplusScrapper, month): month for month in months}
+        
+        for future in as_completed(future_to_month):
+            month = future_to_month[future]
+            try:
+                Eplusconcert = future.result()
+                Eplusconcerts.extend(Eplusconcert)
+                print(f"Completed scraping for month {month}.")
+            except Exception as e:
+                print(f"Error scraping month {month}: {e}")
 
     sheet_name = "Events_eplus.jp"
-
     workbook, sheet = OpenSheet(sheet_name)
 
     for Eplusconcert in Eplusconcerts:
@@ -459,8 +471,8 @@ def ltike_jp_scrap():
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
 sheet_names = []
-pia = True
-eplus = False
+pia = False
+eplus = True
 ltike = False
 
 if not (pia or eplus or ltike):
