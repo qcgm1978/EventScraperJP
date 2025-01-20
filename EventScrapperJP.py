@@ -8,12 +8,18 @@ import time
 import os
 import concurrent.futures
 import random
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
-EXCEL_FILE = "EventsJP2025.xlsx"
+
+#If the front end allows it, the user might choose their own BASE_FOLDER. Then you should check if the BASE_FOLDER was chosen, if not, use the default one. 
+#Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScrapperJP" 
+username=os.getlogin()
+BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScrapperJP" 
+EXCEL_FILE = rf"{BASE_FOLDER}\EventsJP2025.xlsx"
 HEADER = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"]
 
 def save_workbook(workbook):    
@@ -97,9 +103,12 @@ def PiaScrapper(doc_Pia):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
-def eplusScrapper(doc_eplus, month):
+def eplusScrapper(month):
     i=0
     Eplusconcerts = []
+    url = f"https://eplus.jp/sf/event/month-0{month}"
+    doc_eplus = doc_from_url(url)
+    
     li_eplus = doc_eplus.find("li", class_="block-paginator__item block-paginator__item--last")
     if li_eplus:
         max_pages = int(li_eplus.get_text(strip=True))
@@ -108,44 +117,57 @@ def eplusScrapper(doc_eplus, month):
         for page in range(1, max_pages+1):
             url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
             print(f"Scraping page: {page}")
-            doc_eplus = doc_from_url(url)
             
-            ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
-            tickets = ticket_div.find_all("a")
+            retries = 5
+            while retries > 0:
+                try:
+                    doc_eplus = doc_from_url(url)
+                    ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
+                    tickets = ticket_div.find_all("a")
 
-            for ticket in tickets:
-                nameEplus = (ticket.find("h3", class_="ticket-item__title")).get_text(strip=True)
-                
-                if nameEplus:
-                    romajiEplus = convert_to_romaji(nameEplus)
-                else:
-                    romajiEplus = None
-                
-                date_year = ticket.find_all("span", class_="ticket-item__yyyy") 
-                date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  
-                dateEplus_beginning = None
-                dateEplus_ending = None
-
-                if date_year and date_mmdd:
-                    for idx, (year, mmdd) in enumerate(zip(date_year, date_mmdd)):
-                        year_text = year.get_text(strip=True)
-                        mmdd_text = mmdd.get_text(strip=True)
-                        if idx == 0:
-                            dateEplus_beginning = f"{year_text}{mmdd_text}"
-                        if idx == len(date_mmdd) - 1:
-                            dateEplus_ending = f"{year_text}{mmdd_text}"
+                    for ticket in tickets:
+                        nameEplus = (ticket.find("h3", class_="ticket-item__title")).get_text(strip=True)
                         
-                div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
-                if div_eplus_venue:
-                    place_eplus = div_eplus_venue.find("p")
-                    placeEplus = place_eplus.get_text(strip=True) 
-                    linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
-                    if nameEplus and linkEplus:
-                        Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
-                        i+=1
-                        #if i>1:
-                        #    break #tester
-                        #print(i)
+                        if nameEplus:
+                            romajiEplus = convert_to_romaji(nameEplus)
+                        else:
+                            romajiEplus = None
+                        
+                        date_year = ticket.find_all("span", class_="ticket-item__yyyy") 
+                        date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  
+                        dateEplus_beginning = None
+                        dateEplus_ending = None
+
+                        if date_year and date_mmdd:
+                            for idx, (year, mmdd) in enumerate(zip(date_year, date_mmdd)):
+                                year_text = year.get_text(strip=True)
+                                mmdd_text = mmdd.get_text(strip=True)
+                                if idx == 0:
+                                    dateEplus_beginning = f"{year_text}{mmdd_text}"
+                                if idx == len(date_mmdd) - 1:
+                                    dateEplus_ending = f"{year_text}{mmdd_text}"
+                                
+                        div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
+                        if div_eplus_venue:
+                            place_eplus = div_eplus_venue.find("p")
+                            placeEplus = place_eplus.get_text(strip=True) 
+                            linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
+                            if nameEplus and linkEplus:
+                                Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
+                                i+=1
+                                retries = 0
+                                #if i>1:
+                                #    break #tester
+                                #print(i)
+                except Exception as e:
+                    print(f"Error scraping from month: {month} page {page}: {e}")
+                    retries -= 1
+                    if retries > 0:
+                        wait_time = random.randint(20, 60)
+                        print(f"Retrying page {page} after {wait_time} seconds...")
+                        time.sleep(wait_time)
+                    else:
+                        print(f"Failed to scrape page {page} after multiple attempts. Skipping.")
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
@@ -159,43 +181,56 @@ def ltikeScrapper(doc_ltike):
         max_pages = int(match.group(1))
         print(f"Max pages: {max_pages}")
     
-    for page in range(0, max_pages+1):
+    for page in range(0, max_pages):
         url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page={page}&ptabflg=0"
         print(f"Scraping page: {page+1}")
-        doc_ltike = doc_from_url(url)
-    
-        tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
-        for ticket in tickets:
-            nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
         
-            if nameltike:
-                romajiltike = convert_to_romaji(nameltike)
-            else:
-                romajiltike = None
-            info_block = ticket.find("dl", class_="ResultBox__informations")
-            dateltike = None
-            placeltike = None
-            if info_block:
-                    # Find date and place from the <dl> block
-                    date_block = info_block.find("div", class_="ResultBox__information")
-                    if date_block and "公演日" in date_block.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
-                        dateltike = date_block.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+        retries = 5
+        while retries > 0:
+            try:
+                doc_ltike = doc_from_url(url)
+                tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
+                for ticket in tickets:
+                    nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
+                
+                    if nameltike:
+                        romajiltike = convert_to_romaji(nameltike)
+                    else:
+                        romajiltike = None
+                    info_block = ticket.find("dl", class_="ResultBox__informations")
+                    dateltike = None
+                    placeltike = None
+                    if info_block:
+                            # Find date and place from the <dl> block
+                            date_block = info_block.find("div", class_="ResultBox__information")
+                            if date_block and "公演日" in date_block.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                                dateltike = date_block.find("dt", class_="ResultBox__informationText").get_text(strip=True)
 
-                    place_block = info_block.find_all("div", class_="ResultBox__information")
-                    for place in place_block:
-                        if "会場" in place.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
-                            placeltike = place.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+                            place_block = info_block.find_all("div", class_="ResultBox__information")
+                            for place in place_block:
+                                if "会場" in place.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                                    placeltike = place.find("dt", class_="ResultBox__informationText").get_text(strip=True)
 
-            
-            linkltike = "https://l-tike.com/search/?keyword=" + nameltike
-        
-            if nameltike:
-                ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
-                i+=1
-                #if i>1:
-                #    break #tester
-                #print(i)
-                #print (romajiltike, placeltike)
+                    
+                    linkltike = "https://l-tike.com/search/?keyword=" + nameltike
+                
+                    if nameltike:
+                        ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
+                        i+=1
+                        retries = 0
+                        #if i>1:
+                        #    break #tester
+                        #print(i)
+                        #print (romajiltike, placeltike)
+            except Exception as e:
+                print(f"Error scraping page {page}: {e}")
+                retries -= 1
+                if retries > 0:
+                    wait_time = random.randint(20, 60)
+                    print(f"Retrying page {page} after {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Failed to scrape page {page} after multiple attempts. Skipping.")
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
@@ -203,6 +238,8 @@ def OpenSheet(sheet_name):
     if os.path.exists(EXCEL_FILE):
         workbook = openpyxl.load_workbook(EXCEL_FILE)
     else:
+        if not os.path.exists(BASE_FOLDER):
+            os.makedirs(BASE_FOLDER)
         workbook = openpyxl.Workbook()
         workbook.remove(workbook.active)
     if sheet_name in workbook.sheetnames:
@@ -264,10 +301,10 @@ def splitter_pia(sheet_name):
         
         if date_value and "～" in date_value:
             beginning_date, ending_date = date_value.split("～", 1)
-            sheet.cell(row=row, column=4).value = beginning_date.strip()  # Update Beginning Date
-            sheet.cell(row=row, column=5).value = ending_date.strip()  # Update Ending Date
+            sheet.cell(row=row, column=4).value = beginning_date.strip()
+            sheet.cell(row=row, column=5).value = ending_date.strip() 
         elif date_value:
-            sheet.cell(row=row, column=4).value = date_value.strip()  # Do nothing with Beginning Date
+            sheet.cell(row=row, column=4).value = date_value.strip()
 
     save_workbook(workbook)
     print(f"Finished splitting dates in {sheet_name}.")
@@ -415,14 +452,22 @@ def pia_jp_scrap():
     
 def eplus_jp_scrap():
     ## Here we start scrapping eplus.jp ##
-
-    doc_eplus_april = doc_from_url("https://eplus.jp/sf/event/month-04")
-    doc_eplus_may = doc_from_url("https://eplus.jp/sf/event/month-05")
-
-    Eplusconcerts = eplusScrapper(doc_eplus_april, 4) + eplusScrapper(doc_eplus_may, 5)
+    months = [4, 5]
+    Eplusconcerts = []
+    
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_month = {executor.submit(eplusScrapper, month): month for month in months}
+        
+        for future in as_completed(future_to_month):
+            month = future_to_month[future]
+            try:
+                Eplusconcert = future.result()
+                Eplusconcerts.extend(Eplusconcert)
+                print(f"Completed scraping for month {month}.")
+            except Exception as e:
+                print(f"Error scraping month {month}: {e}")
 
     sheet_name = "Events_eplus.jp"
-
     workbook, sheet = OpenSheet(sheet_name)
 
     for Eplusconcert in Eplusconcerts:
@@ -460,8 +505,8 @@ def ltike_jp_scrap():
 
 sheet_names = []
 pia = True
-eplus = False
-ltike = False
+eplus = True
+ltike = True
 
 if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
@@ -478,3 +523,5 @@ else:
 
     if len(sheet_names) > 1:
         combine_sheets(sheet_names)
+
+print(f"All done! Your file has been saved to {EXCEL_FILE}.")
