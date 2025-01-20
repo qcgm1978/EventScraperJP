@@ -389,7 +389,7 @@ def pia_jp_scrap():
     ]
     Piaconcerts = []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         future_to_url = {executor.submit(OptiScrape_pia, url): url for url in urls}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
@@ -460,8 +460,8 @@ def ltike_jp_scrap():
 
 sheet_names = []
 pia = True
-eplus = True
-ltike = True
+eplus = False
+ltike = False
 
 if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
