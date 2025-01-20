@@ -176,43 +176,56 @@ def ltikeScrapper(doc_ltike):
         max_pages = int(match.group(1))
         print(f"Max pages: {max_pages}")
     
-    for page in range(0, max_pages+1):
+    for page in range(0, max_pages):
         url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page={page}&ptabflg=0"
         print(f"Scraping page: {page+1}")
-        doc_ltike = doc_from_url(url)
-    
-        tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
-        for ticket in tickets:
-            nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
         
-            if nameltike:
-                romajiltike = convert_to_romaji(nameltike)
-            else:
-                romajiltike = None
-            info_block = ticket.find("dl", class_="ResultBox__informations")
-            dateltike = None
-            placeltike = None
-            if info_block:
-                    # Find date and place from the <dl> block
-                    date_block = info_block.find("div", class_="ResultBox__information")
-                    if date_block and "公演日" in date_block.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
-                        dateltike = date_block.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+        retries = 5
+        while retries > 0:
+            try:
+                doc_ltike = doc_from_url(url)
+                tickets = doc_ltike.find_all("div", class_=["ResultBox boxContents prfSummaryItem", "ResultBox boxContents prfSummaryItem evenNumber"])
+                for ticket in tickets:
+                    nameltike = (ticket.find("h3", class_="ResultBox__title")).get_text(strip=True)
+                
+                    if nameltike:
+                        romajiltike = convert_to_romaji(nameltike)
+                    else:
+                        romajiltike = None
+                    info_block = ticket.find("dl", class_="ResultBox__informations")
+                    dateltike = None
+                    placeltike = None
+                    if info_block:
+                            # Find date and place from the <dl> block
+                            date_block = info_block.find("div", class_="ResultBox__information")
+                            if date_block and "公演日" in date_block.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                                dateltike = date_block.find("dt", class_="ResultBox__informationText").get_text(strip=True)
 
-                    place_block = info_block.find_all("div", class_="ResultBox__information")
-                    for place in place_block:
-                        if "会場" in place.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
-                            placeltike = place.find("dt", class_="ResultBox__informationText").get_text(strip=True)
+                            place_block = info_block.find_all("div", class_="ResultBox__information")
+                            for place in place_block:
+                                if "会場" in place.find("dt", class_="ResultBox__informationTitle").get_text(strip=True):
+                                    placeltike = place.find("dt", class_="ResultBox__informationText").get_text(strip=True)
 
-            
-            linkltike = "https://l-tike.com/search/?keyword=" + nameltike
-        
-            if nameltike:
-                ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
-                i+=1
-                #if i>1:
-                #    break #tester
-                #print(i)
-                #print (romajiltike, placeltike)
+                    
+                    linkltike = "https://l-tike.com/search/?keyword=" + nameltike
+                
+                    if nameltike:
+                        ltikeconcerts.append({"Name": nameltike, "Romaji": romajiltike, "Place": placeltike, "Date": dateltike, "Link": linkltike})
+                        i+=1
+                        retries = 0
+                        #if i>1:
+                        #    break #tester
+                        #print(i)
+                        #print (romajiltike, placeltike)
+            except Exception as e:
+                print(f"Error scraping page {page}: {e}")
+                retries -= 1
+                if retries > 0:
+                    wait_time = random.randint(20, 60)
+                    print(f"Retrying page {page} after {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Failed to scrape page {page} after multiple attempts. Skipping.")
     print(f"Finished scraping current site. Proceeding to the next one.")
     return ltikeconcerts
 
@@ -484,9 +497,9 @@ def ltike_jp_scrap():
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
 sheet_names = []
-pia = False
+pia = True
 eplus = True
-ltike = False
+ltike = True
 
 if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
