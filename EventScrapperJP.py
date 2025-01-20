@@ -112,44 +112,56 @@ def eplusScrapper(month):
         for page in range(1, max_pages+1):
             url = f"https://eplus.jp/sf/event/month-0{month}/p{page}"
             print(f"Scraping page: {page}")
-            doc_eplus = doc_from_url(url)
             
-            ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
-            tickets = ticket_div.find_all("a")
+            retries = 5
+            while retries > 0:
+                try:
+                    doc_eplus = doc_from_url(url)
+                    ticket_div = doc_eplus.find("div", class_="block-ticket-list__content output")
+                    tickets = ticket_div.find_all("a")
 
-            for ticket in tickets:
-                nameEplus = (ticket.find("h3", class_="ticket-item__title")).get_text(strip=True)
-                
-                if nameEplus:
-                    romajiEplus = convert_to_romaji(nameEplus)
-                else:
-                    romajiEplus = None
-                
-                date_year = ticket.find_all("span", class_="ticket-item__yyyy") 
-                date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  
-                dateEplus_beginning = None
-                dateEplus_ending = None
-
-                if date_year and date_mmdd:
-                    for idx, (year, mmdd) in enumerate(zip(date_year, date_mmdd)):
-                        year_text = year.get_text(strip=True)
-                        mmdd_text = mmdd.get_text(strip=True)
-                        if idx == 0:
-                            dateEplus_beginning = f"{year_text}{mmdd_text}"
-                        if idx == len(date_mmdd) - 1:
-                            dateEplus_ending = f"{year_text}{mmdd_text}"
+                    for ticket in tickets:
+                        nameEplus = (ticket.find("h3", class_="ticket-item__title")).get_text(strip=True)
                         
-                div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
-                if div_eplus_venue:
-                    place_eplus = div_eplus_venue.find("p")
-                    placeEplus = place_eplus.get_text(strip=True) 
-                    linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
-                    if nameEplus and linkEplus:
-                        Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
-                        i+=1
-                        #if i>1:
-                        #    break #tester
-                        #print(i)
+                        if nameEplus:
+                            romajiEplus = convert_to_romaji(nameEplus)
+                        else:
+                            romajiEplus = None
+                        
+                        date_year = ticket.find_all("span", class_="ticket-item__yyyy") 
+                        date_mmdd = ticket.find_all("span", class_="ticket-item__mmdd")  
+                        dateEplus_beginning = None
+                        dateEplus_ending = None
+
+                        if date_year and date_mmdd:
+                            for idx, (year, mmdd) in enumerate(zip(date_year, date_mmdd)):
+                                year_text = year.get_text(strip=True)
+                                mmdd_text = mmdd.get_text(strip=True)
+                                if idx == 0:
+                                    dateEplus_beginning = f"{year_text}{mmdd_text}"
+                                if idx == len(date_mmdd) - 1:
+                                    dateEplus_ending = f"{year_text}{mmdd_text}"
+                                
+                        div_eplus_venue = ticket.find("div", class_="ticket-item__venue")
+                        if div_eplus_venue:
+                            place_eplus = div_eplus_venue.find("p")
+                            placeEplus = place_eplus.get_text(strip=True) 
+                            linkEplus = "https://eplus.jp" + ticket.get("href") if ticket else None
+                            if nameEplus and linkEplus:
+                                Eplusconcerts.append({"Name": nameEplus, "Romaji": romajiEplus, "Place": placeEplus, "Date_beginning": dateEplus_beginning, "Date_ending": dateEplus_ending, "Link": linkEplus})
+                                i+=1
+                                #if i>1:
+                                #    break #tester
+                                #print(i)
+                except Exception as e:
+                    print(f"Error scraping page {page}: {e}")
+                    retries -= 1
+                    if retries > 0:
+                        wait_time = random.randint(20, 60)
+                        print(f"Retrying page {page} after {wait_time} seconds...")
+                        time.sleep(wait_time)
+                    else:
+                        print(f"Failed to scrape page {page} after multiple attempts. Skipping.")
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
@@ -431,8 +443,9 @@ def eplus_jp_scrap():
                 Eplusconcert = future.result()
                 Eplusconcerts.extend(Eplusconcert)
                 print(f"Completed scraping for month {month}.")
-            except Exception as e:
-                print(f"Error scraping month {month}: {e}")
+            except:
+                print(f"Error scraping month {month}. Retrying...")
+                time.sleep(random.randint(20, 60))
 
     sheet_name = "Events_eplus.jp"
     workbook, sheet = OpenSheet(sheet_name)
