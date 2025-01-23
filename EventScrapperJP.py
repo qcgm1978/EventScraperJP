@@ -452,7 +452,7 @@ def pia_jp_scrap():
     
 def eplus_jp_scrap():
     ## Here we start scrapping eplus.jp ##
-    months = [4, 5]
+    months = [4, 5] #Maybe accept user input for months?
     Eplusconcerts = []
     
     with ThreadPoolExecutor(max_workers=20) as executor:
@@ -483,7 +483,7 @@ def eplus_jp_scrap():
 def ltike_jp_scrap():
     # Here we start scrapping l-tike ##
 
-    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page=0&ptabflg=0")
+    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page=0&ptabflg=0") 
 
     ltikeconcerts = ltikeScrapper(doc_ltike_search)
 
@@ -503,6 +503,8 @@ def ltike_jp_scrap():
 
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
+
+#Belowe here to accept user input from frontend
 sheet_names = []
 pia = True
 eplus = True
@@ -512,16 +514,16 @@ if not (pia or eplus or ltike):
     print("No websites selected. Exiting.")
 else:    
     if pia:
-        pia_jp_scrap()
+        pia_jp_scrap() #Executes t.pia.jp scrape
         sheet_names.append("Events_t.pia.jp")
     if eplus:
-        eplus_jp_scrap()
+        eplus_jp_scrap() #Executes eplus.jp scrape
         sheet_names.append("Events_eplus.jp")
     if ltike:
-        ltike_jp_scrap()
+        ltike_jp_scrap() #Executes l-tike.com scrape
         sheet_names.append("Events_l-tike.com")
 
     if len(sheet_names) > 1:
-        combine_sheets(sheet_names)
+        combine_sheets(sheet_names) #Combines all sheets into an additional one
 
 print(f"All done! Your file has been saved to {EXCEL_FILE}.")
