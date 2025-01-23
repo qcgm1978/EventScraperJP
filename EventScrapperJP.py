@@ -171,7 +171,7 @@ def eplusScrapper(month):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
-def ltikeScrapper(doc_ltike):
+def ltikeScrapper(doc_ltike, from_date, to_date):
     i=0
     ltikeconcerts = []
     pagination_position = doc_ltike.find("p", class_="Pagination__position")
@@ -182,7 +182,7 @@ def ltikeScrapper(doc_ltike):
         print(f"Max pages: {max_pages}")
     
     for page in range(0, max_pages):
-        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page={page}&ptabflg=0"
+        url = f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from={from_date}&pdate_to={to_date}&page={page}&ptabflg=0"
         print(f"Scraping page: {page+1}")
         
         retries = 5
@@ -450,9 +450,9 @@ def pia_jp_scrap():
 
     print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
     
-def eplus_jp_scrap():
+def eplus_jp_scrap(months):
     ## Here we start scrapping eplus.jp ##
-    months = [4, 5] #Maybe accept user input for months?
+    #Maybe accept user input for months?
     Eplusconcerts = []
     
     with ThreadPoolExecutor(max_workers=20) as executor:
@@ -480,14 +480,14 @@ def eplus_jp_scrap():
 
     print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
     
-def ltike_jp_scrap():
+def ltike_jp_scrap(from_date, to_date):
     # Here we start scrapping l-tike ##
     #Fir now the dates are static. Maybe accept user input for changing them?
     
     
-    doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page=0&ptabflg=0") 
+    doc_ltike_search = doc_from_url(f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from={from_date}&pdate_to={to_date}&page=0&ptabflg=0") 
 
-    ltikeconcerts = ltikeScrapper(doc_ltike_search)
+    ltikeconcerts = ltikeScrapper(doc_ltike_search, from_date, to_date)
 
     sheet_name = "Events_l-tike.com"
 
@@ -508,6 +508,12 @@ def ltike_jp_scrap():
 
 #Belowe here to accept user input from frontend
 sheet_names = []
+#Maybe accept user input for months in eplus and dates in ltike?
+months = [4, 5] #Let user choose months from a list, then add the month numbers to the list. The current numbers are just examples/useful since the trip to Japan in April
+from_date = "20250418"
+to_date = "20250514" #Let user choose both dates in JP format, regex them to delete "-" or "/" and then add them to the string. The current numbers are just examples/useful since the trip to Japan in April
+#It is also possible to change the searching area in l-tike but that would invovlve checking the website for the available options and then adding them to the code.
+#Can't personalize t.pia.jp.
 pia = True
 eplus = True
 ltike = True
@@ -519,10 +525,10 @@ else:
         pia_jp_scrap() #Executes t.pia.jp scrape
         sheet_names.append("Events_t.pia.jp")
     if eplus:
-        eplus_jp_scrap() #Executes eplus.jp scrape
+        eplus_jp_scrap(months) #Executes eplus.jp scrape
         sheet_names.append("Events_eplus.jp")
     if ltike:
-        ltike_jp_scrap() #Executes l-tike.com scrape
+        ltike_jp_scrap(from_date, to_date) #Executes l-tike.com scrape
         sheet_names.append("Events_l-tike.com")
 
     if len(sheet_names) > 1:
