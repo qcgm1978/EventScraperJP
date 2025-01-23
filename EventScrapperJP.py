@@ -482,7 +482,9 @@ def eplus_jp_scrap():
     
 def ltike_jp_scrap():
     # Here we start scrapping l-tike ##
-
+    #Fir now the dates are static. Maybe accept user input for changing them?
+    
+    
     doc_ltike_search = doc_from_url("https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from=20250418&pdate_to=20250514&page=0&ptabflg=0") 
 
     ltikeconcerts = ltikeScrapper(doc_ltike_search)
