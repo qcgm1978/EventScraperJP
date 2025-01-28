@@ -16,9 +16,9 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 
 #If the front end allows it, the user might choose their own BASE_FOLDER. Then you should check if the BASE_FOLDER was chosen, if not, use the default one. 
-#Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScrapperJP" 
+#Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScraperJP" 
 username=os.getlogin()
-BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScrapperJP" 
+BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScraperJP" 
 EXCEL_FILE = rf"{BASE_FOLDER}\EventsJP2025.xlsx"
 HEADER = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"]
 
@@ -55,7 +55,7 @@ def doc_from_url(url):
             print("Error with the page. Retrying...")
             time.sleep(random.randint(20, 60))
 
-def PiaInnerScrapper(url):
+def PiaInnerScraper(url):
     Inner_doc_Pia = doc_from_url(url)
     for div_Inner_Pia in Inner_doc_Pia.find_all("div", class_="textDefinitionList-2024__item"):
         dt_tag_Pia = div_Inner_Pia.find("dt", class_="textDefinitionList-2024__title")
@@ -68,7 +68,7 @@ def PiaInnerScrapper(url):
                 #else:
                 #    return None   
 
-def PiaScrapper(doc_Pia):
+def PiaScraper(doc_Pia):
     i=0
     Piaconcerts = []
     for div_Pia in doc_Pia.find_all("div"):
@@ -92,7 +92,7 @@ def PiaScrapper(doc_Pia):
                 
                 linkPia = a_tag_Pia.get("href") if a_tag_Pia else None
                                
-                placePia = PiaInnerScrapper(linkPia)
+                placePia = PiaInnerScraper(linkPia)
                                  
                 if namePia and datePia and linkPia:
                     Piaconcerts.append({"Name": namePia, "Romaji": romajiPia, "Place": placePia, "Date": datePia, "Link": linkPia})
@@ -103,7 +103,7 @@ def PiaScrapper(doc_Pia):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Piaconcerts
 
-def eplusScrapper(month):
+def eplusScraper(month):
     i=0
     Eplusconcerts = []
     url = f"https://eplus.jp/sf/event/month-0{month}"
@@ -171,7 +171,7 @@ def eplusScrapper(month):
     print(f"Finished scraping current site. Proceeding to the next one.")
     return Eplusconcerts
 
-def ltikeScrapper(doc_ltike, from_date, to_date):
+def ltikeScraper(doc_ltike, from_date, to_date):
     i=0
     ltikeconcerts = []
     pagination_position = doc_ltike.find("p", class_="Pagination__position")
@@ -415,10 +415,10 @@ def combine_sheets(sheet_names):
     
 def OptiScrape_pia(url):
     doc_Pia = doc_from_url(url)
-    return PiaScrapper(doc_Pia)
+    return PiaScraper(doc_Pia)
 
 def pia_jp_scrap():
-    ## Here we start scrapping pia.jp ##
+    ## Here we start scraping pia.jp ##
     urls = [
         "https://t.pia.jp/music/",
         "https://t.pia.jp/anime/",
@@ -451,12 +451,12 @@ def pia_jp_scrap():
     print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
     
 def eplus_jp_scrap(months):
-    ## Here we start scrapping eplus.jp ##
+    ## Here we start scraping eplus.jp ##
     #Maybe accept user input for months?
     Eplusconcerts = []
     
     with ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_month = {executor.submit(eplusScrapper, month): month for month in months}
+        future_to_month = {executor.submit(eplusScraper, month): month for month in months}
         
         for future in as_completed(future_to_month):
             month = future_to_month[future]
@@ -481,13 +481,13 @@ def eplus_jp_scrap(months):
     print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
     
 def ltike_jp_scrap(from_date, to_date):
-    # Here we start scrapping l-tike ##
+    # Here we start scraping l-tike ##
     #Fir now the dates are static. Maybe accept user input for changing them?
     
     
     doc_ltike_search = doc_from_url(f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from={from_date}&pdate_to={to_date}&page=0&ptabflg=0") 
 
-    ltikeconcerts = ltikeScrapper(doc_ltike_search, from_date, to_date)
+    ltikeconcerts = ltikeScraper(doc_ltike_search, from_date, to_date)
 
     sheet_name = "Events_l-tike.com"
 

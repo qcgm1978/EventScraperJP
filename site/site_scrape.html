@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <link href="./style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <title>EventJP Scraper</title>
+  </head>
+  <body class="site_scrape">
+	<h1>Choose which sites you want to scrape</h1>
+
+    <div class="pages">
+      <div class="page">
+		    <button id="pagePia"><img id="pia_img" src="./tpiajp.png" alt="t.pia.jp icon" style="scale: 0.7;">t.pia.jp</button>
+      </div>
+      <div class="page">
+        <button id="pageEplus"><img id="eplus_img" src="./eplus.png" alt="eplus.jp icon"  style="scale: 0.7;">eplus.jp</button>
+      </div>
+      <div class="page">
+        <button id="pageLTike"><img id="l-tike_img" src="./l-tike.png" alt="l-tike.com icon" style="scale: 1;">l-tike.com</button>
+      </div>
+    </div>
+    
+    <div class="settings">
+    <a href="site_main.html" style="scale: 0.8;"><button id="exit">Back</button></a>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
