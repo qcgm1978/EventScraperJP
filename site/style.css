@@ -53,6 +53,10 @@ h2 {
   max-width: 500px; /* Set a maximum width for the links */
 }
 
+.site_scrape {
+  transform: scale(0.8);
+}
+
 .pages {
   display: flex;
   flex-direction: row;
