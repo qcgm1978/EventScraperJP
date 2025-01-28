@@ -11,19 +11,24 @@
   <body>
     <h1>Event Scrapper</h1>
 
-    <div class="ustawienia">
+    <div class="settings">
 		<button id="start">Start Scrapping</button><br><br>
-		<button id="site_desc">Site Description</button><br><br>
-		<button id="site_">App Description</button><br><br>
-		<button id="ext">WYJDŹ</button><br><br>
+		<button id="site_desc">Sites Description</button><br><br>
+		<button id="app_desc">App Description</button><br><br>
+		<button id="exit">Exit</button><br><br>
     </div>
-		<h2>Choose which </h2>
+		<h2>Choose which sites you want to scrape</h2>
     <div class="pages">
-		<button id="pagePia">t.pia.jp</button><br><br>
-		<button id="pageLTike">l-tike.com</button><br><br>
-		<button id="pageEplus">eplus.jp</button><br><br>
-		<button id="all">All sides</button><br><br>
-	</div>
+      <div class="page">
+		    <button id="pagePia"><img id="pia_img" src="./tpiajp.png" alt="t.pia.jp icon" style="scale: 0.7;"><br>t.pia.jp</button>
+      </div>
+      <div class="page">
+        <button id="pageEplus"><img id="eplus_img" src="./eplus.png" alt="eplus.jp icon"  style="scale: 0.7;"><br>eplus.jp</button>
+      </div>
+      <div class="page">
+        <button id="pageLTike"><img id="l-tike_img" src="./l-tike.png" alt="l-tike.com icon" style="scale: 1;"><br>l-tike.com</button>
+      </div>
+    </div>
     <script src="./renderer.js"></script>
   </body>
 </html>
