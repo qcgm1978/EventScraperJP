@@ -81,7 +81,24 @@ h2 {
 .page button{
   font-size: 30px;
   text-align: center;
-  font-weight: bold;;
+  font-weight: bold;
+}
+
+.scrape_settings {
+  display: flex;
+  flex-direction: row; /* Change to row to place buttons next to each other */
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.scrape_settings button {
+  display: inline-block;
+  font-size: 50px;
+  padding: 15px;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
 }
 
 button {
@@ -109,4 +126,5 @@ button:hover {
 button:active {
   background-color: #FFD5B3;
 }
+
 
