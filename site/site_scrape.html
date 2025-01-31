@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +27,15 @@
     <a href="site_main.html"><button id="back" style="scale: 0.8;">Back</button></a>
     <button id="inner_settings" style="scale: 0.8;">Settings</button> <!-- Add setting for eplus and l-tike -->
     <a href=""><button id="start_scrape"  style="scale: 0.8;">Start</button></a> <!-- Add another site after clicking this, which will show the choosen sites, loading wheel, prints in console -->
+    </div>
+
+    <div id="settings_options" style="display: none;">
+      <h2>Settings Options</h2>
+      <label for="option1">Option 1:</label>
+      <input type="checkbox" id="option1" name="option1"><br>
+      <label for="option2">Option 2:</label>
+      <input type="checkbox" id="option2" name="option2"><br>
+      <!-- Add more settings options as needed -->
     </div>
 
     <script src="./renderer.js"></script>
