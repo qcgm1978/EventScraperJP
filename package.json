@@ -1,0 +1,15 @@
+{
+    "name": "eventjp-scraper",
+    "version": "1.0.0",
+    "description": "EventJP Scraper with Electron and Python backend",
+    "main": "main.js",
+    "scripts": {
+      "start": "electron ."
+    },
+    "devDependencies": {
+      "electron": "^13.1.7"
+    },
+    "dependencies": {
+      "axios": "^0.21.1"
+    }
+  }
