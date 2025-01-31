@@ -2,7 +2,7 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="./style.css" rel="stylesheet">
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
@@ -13,19 +13,19 @@
 
     <div class="pages">
       <div class="page">
-		    <button id="pagePia"><img id="pia_img" src="./tpiajp.png" alt="t.pia.jp icon" style="scale: 0.7;">t.pia.jp</button>
+		    <button class="siteSelect" id="pagePia" type="button"><img id="pia_img" src="./tpiajp.png" alt="t.pia.jp icon" style="scale: 0.7;">t.pia.jp</button>
       </div>
       <div class="page">
-        <button id="pageEplus"><img id="eplus_img" src="./eplus.png" alt="eplus.jp icon"  style="scale: 0.7;">eplus.jp</button>
+        <button class="siteSelect" id="pageEplus" type="button"><img id="eplus_img" src="./eplus.png" alt="eplus.jp icon"  style="scale: 0.7;">eplus.jp</button>
       </div>
       <div class="page">
-        <button id="pageLTike"><img id="l-tike_img" src="./l-tike.png" alt="l-tike.com icon" style="scale: 1;">l-tike.com</button>
+        <button class="siteSelect" id="pageLTike" type="button"><img id="l-tike_img" src="./l-tike.png" alt="l-tike.com icon" style="scale: 1;">l-tike.com</button>
       </div>
     </div>
 
     <div class="scrape_settings">
     <a href="site_main.html"><button id="back" style="scale: 0.8;">Back</button></a>
-    <a href=""><button id="inner_settings" style="scale: 0.8;">Settings</button></a> <!-- Add setting for eplus and l-tike -->
+    <button id="inner_settings" style="scale: 0.8;">Settings</button> <!-- Add setting for eplus and l-tike -->
     <a href=""><button id="start_scrape"  style="scale: 0.8;">Start</button></a> <!-- Add another site after clicking this, which will show the choosen sites, loading wheel, prints in console -->
     </div>
 
