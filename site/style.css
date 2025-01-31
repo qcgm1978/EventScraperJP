@@ -128,7 +128,8 @@ button:active {
   background-color: #FFD5B3;
 }
 
-.siteSelect--selected {
-  background-color: #FFD5B3;
+.selected {
+  background-color: #FFE5CC;
+  color: #4A4A4A;
   transform: scale(0.97);
 }
