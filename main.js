@@ -7,8 +7,8 @@ let pythonProcess;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1600,
+    height: 1200,
     webPreferences: {
       preload: path.join(__dirname, 'renderer.js'),
       nodeIntegration: true,
@@ -16,7 +16,7 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('./site/site_main.html');
 
   mainWindow.on('closed', function () {
     mainWindow = null;
