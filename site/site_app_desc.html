@@ -2,9 +2,30 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="./style.css" rel="stylesheet">
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
     <title>EventJPScraper</title>
   </head>
+  <body>
+    <h1>🎟️ App description 🎟️</h1>
+
+    <div class="app_desc">
+      <p>This app is a web scraper that scrapes event information from various ticket websites in Japan. The app is designed to scrape event information from the following websites:</p><br>
+      <ul>
+        <li>✨<a href="https://t.pia.jp/" target="_blank" style="color: blue; text-decoration: underline;">Ticket Pia (t.pia.jp)</a></li>
+        <li>✨<a href="https://eplus.jp/" target="_blank" style="color: blue; text-decoration: underline;">e+ (eplus.jp)</a></li>
+        <li>✨<a href="https://l-tike.com/" target="_blank" style="color: blue; text-decoration: underline;">Lawson Ticket (l-tike.com)</a></li>
+      </ul>
+      <br><p>The app allows Users to select which websites they want to scrape and provides settings options for eplus.jp and l-tike.com.<br>
+        Currently, the User can choose the scraped months for eplus.jp and precise dates for l-tike.com.<br>
+        ⚠️(Currently it checks only for Kanto/Koshinetsu/Kinki/Hokuriku regions - will probably change in the future.)</p><br>
+        ⚠️ (Data for t.pia.ja is taken from its front page, therefore cannot be modified.)
+    </div>
+    
+    <div class="scrape_settings">
+      <a href="site_main.html"><button id="back" style="scale: 0.8;">Back</button></a>
+    </div>
+  </body>
+</html>
