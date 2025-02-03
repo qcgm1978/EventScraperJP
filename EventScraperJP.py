@@ -452,11 +452,10 @@ def pia_jp_scrap():
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
 
-    print(f"Done! Scraped t.pia.jp. Data saved to {EXCEL_FILE}.")
+    print(f"Done! Scraped t.pia.jp.")
     
 def eplus_jp_scrap(months):
     ## Here we start scraping eplus.jp ##
-    #Maybe accept user input for months?
     Eplusconcerts = []
     
     with ThreadPoolExecutor(max_workers=20) as executor:
@@ -482,11 +481,10 @@ def eplus_jp_scrap(months):
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
 
-    print(f"Done! Scraped eplus.jp. Data saved to {EXCEL_FILE}.")
+    print(f"Done! Scraped eplus.jp.")
     
 def ltike_jp_scrap(from_date, to_date):
     # Here we start scraping l-tike ##
-    #Fir now the dates are static. Maybe accept user input for changing them?
     
     
     doc_ltike_search = doc_from_url(f"https://l-tike.com/search/?keyword=*&area=3%2C5&pref=08%2C09%2C10%2C11%2C12%2C13%2C14%2C15%2C19%2C20%2C16%2C17%2C18%2C25%2C26%2C27%2C28%2C29%2C30&pdate_from={from_date}&pdate_to={to_date}&page=0&ptabflg=0") 
@@ -507,7 +505,7 @@ def ltike_jp_scrap(from_date, to_date):
     cleaner(sheet_name)
     style_sort_excel(sheet_name)
 
-    print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
+    print(f"Done! Scraped l-tike.com.")
 
 #****************************************************************#
 #New code from app.py integrated here
@@ -524,23 +522,26 @@ def start_scrape():
     l_tike_end_date = data.get('l_tike_end_date').replace("-", "")
     
     print('Selected sites:', selected_sites)
-    print('Selected months:', selected_months)
-    print('Selected start date:', l_tike_start_date)
-    print('Selected end date:', l_tike_end_date)
 
     if 'tpiajp' in selected_sites:
         pia_jp_scrap()
         sheet_names.append("Events_t.pia.jp")
     if 'eplus' in selected_sites:
+        print('Selected months for eplus.jp:', selected_months)
         eplus_jp_scrap(selected_months)
         sheet_names.append("Events_eplus.jp")
     if 'l_tike' in selected_sites:
+        print('Selected start date for l-tike.com:', l_tike_start_date)
+        print('Selected end date for l-tike.com:', l_tike_end_date)
         ltike_jp_scrap(l_tike_start_date, l_tike_end_date)
         sheet_names.append("Events_l-tike.com")
 
     if len(sheet_names) > 1:
         combine_sheets(sheet_names)
 
+    print(f"All done! Your file has been saved to:")
+    print(EXCEL_FILE)
+    
     return jsonify({'status': 'success', 'selectedSites': selected_sites})
 
 if __name__ != '__main__':
@@ -549,8 +550,6 @@ else:
     ISDEBUG = False
     sys.stdout.reconfigure(line_buffering=True)
     app.run()
-print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
-
 
 #****************************************************************#  
 #Old code
