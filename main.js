@@ -9,6 +9,10 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1600,
     height: 1200,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    }
   });
 
   mainWindow.loadFile('./site/site_main.html');
@@ -21,6 +25,10 @@ function createWindow() {
 app.on('ready', () => {
   pythonProcess = spawn('python', ['./EventScraperJP.py'])
   createWindow();
+  pythonProcess.stdout.on('data', (data) => {
+    console.log(data.toString());
+    mainWindow.webContents.send('childoutput', data.toString());
+  });
 });
 
 app.on('window-all-closed', function () {

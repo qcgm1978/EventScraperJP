@@ -8,6 +8,7 @@ import time
 import os
 import concurrent.futures
 import random
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
@@ -22,6 +23,7 @@ username=os.getlogin()
 BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScraperJP" 
 EXCEL_FILE = rf"{BASE_FOLDER}\EventsJP2025.xlsx"
 HEADER = ["Name", "Romaji", "Place", "Beginning Date", "Ending Date", "Link"]
+ISDEBUG = True
 
 def save_workbook(workbook):    
     try:
@@ -44,7 +46,8 @@ def doc_from_url(url):
         "Accept-Language": "pl,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
     }
-    print(f"Scraping page: {url}")
+    if ISDEBUG:
+        print(f"Scraping page: {url}")
     while True:
         try:
             page = requests.get(url, headers=headers)
@@ -543,6 +546,8 @@ def start_scrape():
 if __name__ != '__main__':
     app.run(debug=True)
 else:
+    ISDEBUG = False
+    sys.stdout.reconfigure(line_buffering=True)
     app.run()
 print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
 

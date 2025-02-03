@@ -1,7 +1,12 @@
+const { ipcRenderer } = require("electron");
 let pythonProcess;
 let siteBack = false;
 
-
+ipcRenderer.on("childoutput", (event, data) => {
+  console.log(data);
+  if (document.getElementById("output-box"))
+  document.getElementById("output-box").innerText += data;
+});
 
   const settingsButton = document.getElementById('inner_settings');
   const settingsOptions = document.getElementById('settings_options');
@@ -139,3 +144,4 @@ let siteBack = false;
   backButton.addEventListener('click', function() {
     siteBack = true;
   });
+
