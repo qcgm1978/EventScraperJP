@@ -253,3 +253,13 @@ button:active {
   overflow: auto;
   margin-bottom: 20px;
 }
+
+.chosen-sites img {
+  display: flex;
+  height: 300px;
+  width: 400px; /* Set the width to 100% */
+  margin: 0; /* Remove any margin */
+  display: inline-block; /* Ensure the image is inline with the text */
+  vertical-align: middle; /* Align the image vertically with the text */
+  transform-origin: middle; /* Control the scaling origin */
+ }

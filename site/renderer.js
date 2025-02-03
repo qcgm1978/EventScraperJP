@@ -1,3 +1,5 @@
+let pythonProcess; 
+
 
   const settingsButton = document.getElementById('inner_settings');
   const settingsOptions = document.getElementById('settings_options');
@@ -58,6 +60,7 @@
 
     // Navigate to site_scraping.html
     window.location.href = 'site_scraping.html';
+    pythonProcess = spawn('python', ['../EventScraperJP.py']);
   });}
 
   // Handle dynamic content in site_scraping.html
@@ -113,4 +116,11 @@
   const exitButton = document.getElementById('exit-button');
   exitButton.addEventListener('click', function() {
     window.close(); // Close the Electron window
+  });
+
+  const backButton = document.getElementById('back-button');
+  backButton.addEventListener('click', function() {
+    if (pythonProcess){
+      pythonProcess.kill();
+    }
   });
