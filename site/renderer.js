@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const settingsOptions = document.getElementById('settings_options');
 
   settingsButton.addEventListener('click', function() {
-    if (settingsOptions.style.display === 'none' || settingsOptions.style.display === '') {
-      settingsOptions.style.display = 'block';
-    } else {
+    if (settingsOptions.style.display === 'block' || settingsOptions.style.display === '') {
       settingsOptions.style.display = 'none';
+    } else {
+      settingsOptions.style.display = 'block';
     }
   });
 

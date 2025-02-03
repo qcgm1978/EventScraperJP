@@ -10,7 +10,7 @@ function createWindow() {
     width: 1600,
     height: 1200,
     webPreferences: {
-      preload: path.join(__dirname, 'renderer.js'),
+      preload: path.join(__dirname, 'site', 'renderer.js'), // Corrected path to renderer.js
       nodeIntegration: true,
       contextIsolation: false,
     },

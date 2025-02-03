@@ -511,25 +511,27 @@ def ltike_jp_scrap(from_date, to_date):
 #
 #app = Flask(__name__)
 #
+#@app.route('/start_scrape', methods=['POST'])
 #def start_scrape():
 #    data = request.get_json()
 #    selected_sites = data.get('selectedSites', [])
+#    selected_months = data.get('selectedMonths', [])
+#    l_tike_start_date = data.get('l_tike_start_date')
+#    l_tike_end_date = data.get('l_tike_end_date')
+#    
 #    print('Selected sites:', selected_sites)
-#    
-#    sheet_names = []
-#    months = [4, 5]
-#    from_date = "20250418"
-#    to_date = "20250514"
-#    
+#    print('Selected months:', selected_months)
+#    print('Selected start date:', l_tike_start_date)
+#    print('Selected end date:', l_tike_end_date)
+
+#    Add your scraping logic here based on the selected sites and dates
+#    For example:
 #    if 'pagePia' in selected_sites:
 #        pia_jp_scrap()
-#        sheet_names.append("Events_t.pia.jp")
 #    if 'pageEplus' in selected_sites:
-#        eplus_jp_scrap(months)
-#        sheet_names.append("Events_eplus.jp")
+#        eplus_jp_scrap(selected_months)
 #    if 'pageLTike' in selected_sites:
-#        ltike_jp_scrap(from_date, to_date)
-#        sheet_names.append("Events_l-tike.com")
+#        ltike_jp_scrap(l_tike_start_date, l_tike_end_date)
 #
 #    if len(sheet_names) > 1:
 #        combine_sheets(sheet_names)
@@ -538,7 +540,8 @@ def ltike_jp_scrap(from_date, to_date):
 #
 #if __name__ == '__main__':
 #    app.run(debug=True)
-#    
+#
+#print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
 #   
 #****************************************************************#  
     
