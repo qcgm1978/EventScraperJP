@@ -14,6 +14,7 @@ from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
+from flask import Flask, request, jsonify
 
 #If the front end allows it, the user might choose their own BASE_FOLDER. Then you should check if the BASE_FOLDER was chosen, if not, use the default one. 
 #Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScraperJP" 
@@ -505,7 +506,42 @@ def ltike_jp_scrap(from_date, to_date):
 
     print(f"Done! Scraped l-tike.com. Data saved to {EXCEL_FILE}.")
 
-
+#****************************************************************#
+#New code from app.py integrated here
+#
+#app = Flask(__name__)
+#
+#def start_scrape():
+#    data = request.get_json()
+#    selected_sites = data.get('selectedSites', [])
+#    print('Selected sites:', selected_sites)
+#    
+#    sheet_names = []
+#    months = [4, 5]
+#    from_date = "20250418"
+#    to_date = "20250514"
+#    
+#    if 'pagePia' in selected_sites:
+#        pia_jp_scrap()
+#        sheet_names.append("Events_t.pia.jp")
+#    if 'pageEplus' in selected_sites:
+#        eplus_jp_scrap(months)
+#        sheet_names.append("Events_eplus.jp")
+#    if 'pageLTike' in selected_sites:
+#        ltike_jp_scrap(from_date, to_date)
+#        sheet_names.append("Events_l-tike.com")
+#
+#    if len(sheet_names) > 1:
+#        combine_sheets(sheet_names)
+#
+#    return jsonify({'status': 'success', 'selectedSites': selected_sites})
+#
+#if __name__ == '__main__':
+#    app.run(debug=True)
+#    
+#   
+#****************************************************************#  
+    
 #Belowe here to accept user input from frontend
 sheet_names = []
 #Maybe accept user input for months in eplus and dates in ltike?
