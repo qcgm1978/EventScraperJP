@@ -508,69 +508,69 @@ def ltike_jp_scrap(from_date, to_date):
 
 #****************************************************************#
 #New code from app.py integrated here
-#
-#app = Flask(__name__)
-#
-#@app.route('/start_scrape', methods=['POST'])
-#def start_scrape():
-#    data = request.get_json()
-#    selected_sites = data.get('selectedSites', [])
-#    selected_months = data.get('selectedMonths', [])
-#    l_tike_start_date = data.get('l_tike_start_date').replace("-", "")
-#    l_tike_end_date = data.get('l_tike_end_date').replace("-", "")
-#    
-#    print('Selected sites:', selected_sites)
-#    print('Selected months:', selected_months)
-#    print('Selected start date:', l_tike_start_date)
-#    print('Selected end date:', l_tike_end_date)
-#
-#    Add your scraping logic here based on the selected sites and dates
-#    For example:
-#    if 'pagePia' in selected_sites:
-#        pia_jp_scrap()
-#    if 'pageEplus' in selected_sites:
-#        eplus_jp_scrap(selected_months)
-#    if 'pageLTike' in selected_sites:
-#        ltike_jp_scrap(l_tike_start_date, l_tike_end_date)
-#
-#    if len(sheet_names) > 1:
-#        combine_sheets(sheet_names)
-#
-#    return jsonify({'status': 'success', 'selectedSites': selected_sites})
-#
-#if __name__ == '__main__':
-#    app.run(debug=True)
-#
-#print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
-#   
-#****************************************************************#  
-    
-#Belowe here to accept user input from frontend
-sheet_names = []
-#Maybe accept user input for months in eplus and dates in ltike?
-months = [4, 5] #Let user choose months from a list, then add the month numbers to the list. The current numbers are just examples/useful since the trip to Japan in April
-from_date = "20250418"
-to_date = "20250514" #Let user choose both dates in JP format, regex them to delete "-" or "/" and then add them to the string. The current numbers are just examples/useful since the trip to Japan in April
-#It is also possible to change the searching area in l-tike but that would invovlve checking the website for the available options and then adding them to the code.
-#Can't personalize t.pia.jp.
-pia = True
-eplus = True
-ltike = True
 
-if not (pia or eplus or ltike):
-    print("No websites selected. Exiting.")
-else:    
-    if pia:
-        pia_jp_scrap() #Executes t.pia.jp scrape
+app = Flask(__name__)
+
+@app.route('/start_scrape', methods=['POST'])
+def start_scrape():
+    sheet_names = []
+    data = request.get_json()
+    selected_sites = data.get('selectedSites', [])
+    selected_months = data.get('selectedMonths', [])
+    l_tike_start_date = data.get('l_tike_start_date').replace("-", "")
+    l_tike_end_date = data.get('l_tike_end_date').replace("-", "")
+    
+    print('Selected sites:', selected_sites)
+    print('Selected months:', selected_months)
+    print('Selected start date:', l_tike_start_date)
+    print('Selected end date:', l_tike_end_date)
+
+    if 'pagePia' in selected_sites:
+        pia_jp_scrap()
         sheet_names.append("Events_t.pia.jp")
-    if eplus:
-        eplus_jp_scrap(months) #Executes eplus.jp scrape
-        sheet_names.append("Events_eplus.jp")
-    if ltike:
-        ltike_jp_scrap(from_date, to_date) #Executes l-tike.com scrape
-        sheet_names.append("Events_l-tike.com")
+    if 'pageEplus' in selected_sites:
+        eplus_jp_scrap(selected_months)
+        sheet_names.append("Events_t.pia.jp")
+    if 'pageLTike' in selected_sites:
+        ltike_jp_scrap(l_tike_start_date, l_tike_end_date)
+        sheet_names.append("Events_t.pia.jp")
 
     if len(sheet_names) > 1:
-        combine_sheets(sheet_names) #Combines all sheets into an additional one
+        combine_sheets(sheet_names)
 
-print(f"All done! Your file has been saved to {EXCEL_FILE}.")
+    return jsonify({'status': 'success', 'selectedSites': selected_sites})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
+
+
+#****************************************************************#  
+#Old code
+#
+#sheet_names = []
+#months = [4, 5]
+#from_date = "20250418"
+#to_date = "20250514"
+#pia = True
+#eplus = True
+#ltike = True
+#
+#if not (pia or eplus or ltike):
+#    print("No websites selected. Exiting.")
+#else:    
+#    if pia:
+#        pia_jp_scrap() #Executes t.pia.jp scrape
+#        sheet_names.append("Events_t.pia.jp")
+#    if eplus:
+#        eplus_jp_scrap(months) #Executes eplus.jp scrape
+#        sheet_names.append("Events_eplus.jp")
+#    if ltike:
+#        ltike_jp_scrap(from_date, to_date) #Executes l-tike.com scrape
+#        sheet_names.append("Events_l-tike.com")
+#
+#    if len(sheet_names) > 1:
+#        combine_sheets(sheet_names) #Combines all sheets into an additional one
+#
+#print(f"All done! Your file has been saved to {EXCEL_FILE}.")
