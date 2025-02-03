@@ -1,4 +1,5 @@
-let pythonProcess; 
+let pythonProcess;
+
 
 
   const settingsButton = document.getElementById('inner_settings');
@@ -66,8 +67,8 @@ let pythonProcess;
     localStorage.setItem('l-tike_end_date', JSON.stringify(l_tike_end_date));
 
     // Navigate to site_scraping.html
-    window.location.href = 'site_scraping.html';
     pythonProcess = spawn('python', ['../EventScraperJP.py']);
+    window.location.href = 'site_scraping.html';
   });}
 
   // Handle dynamic content in site_scraping.html
