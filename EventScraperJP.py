@@ -525,24 +525,25 @@ def start_scrape():
     print('Selected start date:', l_tike_start_date)
     print('Selected end date:', l_tike_end_date)
 
-    if 'pagePia' in selected_sites:
+    if 'tpiajp' in selected_sites:
         pia_jp_scrap()
         sheet_names.append("Events_t.pia.jp")
-    if 'pageEplus' in selected_sites:
+    if 'eplus' in selected_sites:
         eplus_jp_scrap(selected_months)
-        sheet_names.append("Events_t.pia.jp")
-    if 'pageLTike' in selected_sites:
+        sheet_names.append("Events_eplus.jp")
+    if 'l_tike' in selected_sites:
         ltike_jp_scrap(l_tike_start_date, l_tike_end_date)
-        sheet_names.append("Events_t.pia.jp")
+        sheet_names.append("Events_l-tike.com")
 
     if len(sheet_names) > 1:
         combine_sheets(sheet_names)
 
     return jsonify({'status': 'success', 'selectedSites': selected_sites})
 
-if __name__ == '__main__':
+if __name__ != '__main__':
     app.run(debug=True)
-
+else:
+    app.run()
 print(f"All done! Your file has been saved to {EXCEL_FILE}.")    
 
 

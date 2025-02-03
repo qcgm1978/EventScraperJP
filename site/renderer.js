@@ -1,4 +1,5 @@
 let pythonProcess;
+let siteBack = false;
 
 
 
@@ -31,6 +32,7 @@ let pythonProcess;
   const startButton = document.getElementById('start_scrape');
   if (startButton) {
   startButton.addEventListener('click', function() {
+    siteBack = false;
     const selectedSites = [];
     buttons.forEach(button => {
       if (button.classList.contains('selected')) {
@@ -67,7 +69,6 @@ let pythonProcess;
     localStorage.setItem('l-tike_end_date', JSON.stringify(l_tike_end_date));
 
     // Navigate to site_scraping.html
-    pythonProcess = spawn('python', ['../EventScraperJP.py']);
     window.location.href = 'site_scraping.html';
   });}
 
@@ -79,6 +80,9 @@ let pythonProcess;
     const exitButton = document.getElementById('exit-button');
 
     const selectedSites = JSON.parse(localStorage.getItem('selectedSites')) || [];
+    const selectedMonths = JSON.parse(localStorage.getItem('selectedMonths')) || [];
+    const l_tike_start_date = JSON.parse(localStorage.getItem('l-tike_start_date')) || [];
+    const l_tike_end_date = JSON.parse(localStorage.getItem('l-tike_end_date')) || [];
 
     // Display chosen sites' logos
     selectedSites.forEach(site => {
@@ -95,24 +99,27 @@ let pythonProcess;
     loadingWheelDiv.appendChild(loadingWheel);
 
     // Fetch data from the backend and display output
-    fetch('http://localhost:5000/start_scrape', {
+    request = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ selectedSites }),
+      body: JSON.stringify({selectedSites, selectedMonths, l_tike_start_date, l_tike_end_date}),
+    };
+    console.log('Request:', request);
+    fetch('http://localhost:5000/start_scrape', request)
+    .then(response => {
+      console.log('Raw response:', response);
+      return response.json();
     })
-    .then(response => response.json())
     .then(data => {
       console.log('Success:', data);
       loadingWheelDiv.style.display = 'none'; // Hide loading wheel
-      outputBoxDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`; // Display output
       exitButton.style.display = 'block'; // Show exit button
     })
     .catch((error) => {
       console.error('Error:', error);
       loadingWheelDiv.style.display = 'none'; // Hide loading wheel
-      outputBoxDiv.innerHTML = `<pre>Error: ${error.message}</pre>`; // Display error
       exitButton.style.display = 'block'; // Show exit button
     });
 
@@ -122,13 +129,13 @@ let pythonProcess;
     });
   };
   const exitButton = document.getElementById('exit-button');
+  if (exitButton)
   exitButton.addEventListener('click', function() {
     window.close(); // Close the Electron window
   });
 
   const backButton = document.getElementById('back-button');
+  if (backButton)
   backButton.addEventListener('click', function() {
-    if (pythonProcess){
-      pythonProcess.kill();
-    }
+    siteBack = true;
   });

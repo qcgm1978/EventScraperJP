@@ -19,6 +19,7 @@ function createWindow() {
 }
 
 app.on('ready', () => {
+  pythonProcess = spawn('python', ['./EventScraperJP.py'])
   createWindow();
 });
 
