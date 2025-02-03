@@ -5,7 +5,7 @@ let siteBack = false;
 ipcRenderer.on("childoutput", (event, data) => {
   console.log(data);
   if (document.getElementById("output-box"))
-  document.getElementById("output-box").innerText += data;
+    document.getElementById("output-box").innerText += data;
 });
 
   const settingsButton = document.getElementById('inner_settings');
@@ -83,7 +83,6 @@ ipcRenderer.on("childoutput", (event, data) => {
     const loadingWheelDiv = document.getElementById('loading-wheel');
     const outputBoxDiv = document.getElementById('output-box');
     const exitButton = document.getElementById('exit-button');
-    const fileButton = document.getElementById('file-button');
 
     const selectedSites = JSON.parse(localStorage.getItem('selectedSites')) || [];
     const selectedMonths = JSON.parse(localStorage.getItem('selectedMonths')) || [];
@@ -122,7 +121,6 @@ ipcRenderer.on("childoutput", (event, data) => {
       console.log('Success:', data);
       loadingWheelDiv.style.display = 'none'; // Hide loading wheel
       exitButton.style.display = 'block'; // Show exit button
-      fileButton.style.display = 'block'; // Show exit button
     })
     .catch((error) => {
       console.error('Error:', error);
