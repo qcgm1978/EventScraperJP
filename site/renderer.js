@@ -37,7 +37,10 @@ let pythonProcess;
       }
     });
     console.log('Selected sites:', selectedSites);
-
+    if (selectedSites.length === 0) {
+      alert('Please select at least one site.');
+      return;
+    }
     const selectedMonths = [];
     buttons_eplus.forEach(buttons_eplus => {
       if (buttons_eplus.classList.contains('selected_eplus')) {
@@ -45,6 +48,10 @@ let pythonProcess;
       }
     });
     console.log('Selected months:', selectedMonths);
+
+    if (selectedMonths.length === 0 && selectedSites.includes('eplus')) {
+      alert('Please select at least one month.');
+      return;}
 
     let l_tike_start_date = document.getElementById('l-tike_start_date').value;
     let l_tike_end_date = document.getElementById('l-tike_end_date').value;

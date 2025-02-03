@@ -108,9 +108,9 @@ ul {
 .page img {
  display: flex;
  height: 300px;
+ flex-direction: row;
  width: 400px; /* Set the width to 100% */
  margin: 0; /* Remove any margin */
- display: inline-block; /* Ensure the image is inline with the text */
  vertical-align: middle; /* Align the image vertically with the text */
  transform-origin: middle; /* Control the scaling origin */
 }
@@ -130,11 +130,13 @@ ul {
 }
 
 .scrape_settings button {
-  display: inline-block;
+  display: flex;
   font-size: 50px;
   padding: 15px;
   text-align: center;
+  align-items: center;
   width: 100%;
+  justify-content: center;
   max-width: 600px;
 }
 

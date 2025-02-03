@@ -3,7 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 let mainWindow;
-let pythonProcess;
+let pythonProcess = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -35,5 +35,6 @@ app.on('activate', function () {
 });
 
 app.on('quit', function () {
-  pythonProcess.kill();
-});
+  if (pythonProcess) {
+    pythonProcess.kill();
+}});
