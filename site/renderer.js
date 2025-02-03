@@ -1,15 +1,16 @@
-document.addEventListener('DOMContentLoaded', function() {
+
   const settingsButton = document.getElementById('inner_settings');
   const settingsOptions = document.getElementById('settings_options');
 
-  settingsButton.addEventListener('click', function() {
-    if (settingsOptions.style.display === 'block' || settingsOptions.style.display === '') {
-      settingsOptions.style.display = 'none';
-    } else {
-      settingsOptions.style.display = 'block';
-    }
-  });
-
+  if (settingsButton)  {
+    settingsButton.addEventListener('click', function() {
+      if (settingsOptions.style.display === 'block' || settingsOptions.style.display === '') {
+        settingsOptions.style.display = 'none';
+      } else {
+        settingsOptions.style.display = 'block';
+      }
+    });
+  }
   const buttons = document.querySelectorAll('.siteSelect');
   buttons.forEach(button => {
     button.addEventListener('click', function() {
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   const startButton = document.getElementById('start_scrape');
+  if (startButton) {
   startButton.addEventListener('click', function() {
     const selectedSites = [];
     buttons.forEach(button => {
@@ -56,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Navigate to site_scraping.html
     window.location.href = 'site_scraping.html';
-  });
+  });}
 
   // Handle dynamic content in site_scraping.html
   if (window.location.pathname.endsWith('site_scraping.html')) {
@@ -107,5 +109,8 @@ document.addEventListener('DOMContentLoaded', function() {
     exitButton.addEventListener('click', function() {
       window.close(); // Close the Electron window
     });
-  }
-});
+  };
+  const exitButton = document.getElementById('exit-button');
+  exitButton.addEventListener('click', function() {
+    window.close(); // Close the Electron window
+  });

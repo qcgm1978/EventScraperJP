@@ -516,14 +516,14 @@ def ltike_jp_scrap(from_date, to_date):
 #    data = request.get_json()
 #    selected_sites = data.get('selectedSites', [])
 #    selected_months = data.get('selectedMonths', [])
-#    l_tike_start_date = data.get('l_tike_start_date')
-#    l_tike_end_date = data.get('l_tike_end_date')
+#    l_tike_start_date = data.get('l_tike_start_date').replace("-", "")
+#    l_tike_end_date = data.get('l_tike_end_date').replace("-", "")
 #    
 #    print('Selected sites:', selected_sites)
 #    print('Selected months:', selected_months)
 #    print('Selected start date:', l_tike_start_date)
 #    print('Selected end date:', l_tike_end_date)
-
+#
 #    Add your scraping logic here based on the selected sites and dates
 #    For example:
 #    if 'pagePia' in selected_sites:

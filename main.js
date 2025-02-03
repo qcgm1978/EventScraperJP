@@ -9,11 +9,6 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1600,
     height: 1200,
-    webPreferences: {
-      preload: path.join(__dirname, 'site', 'renderer.js'), // Corrected path to renderer.js
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
   });
 
   mainWindow.loadFile('./site/site_main.html');
@@ -24,7 +19,7 @@ function createWindow() {
 }
 
 app.on('ready', () => {
-  pythonProcess = spawn('python', ['python-backend/app.py']);
+  pythonProcess = spawn('python', ['EventScraperJP.py']);
   createWindow();
 });
 
