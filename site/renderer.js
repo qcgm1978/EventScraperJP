@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  const buttons_eplus = document.querySelectorAll('.monthSelect');
+  buttons_eplus.forEach(buttons_eplus => {
+    buttons_eplus.addEventListener('click', function() {
+      this.classList.toggle('selected_eplus');
+    });
+  });
+
   const startButton = document.getElementById('start_scrape');
   startButton.addEventListener('click', function() {
     const selectedSites = [];
@@ -27,8 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     console.log('Selected sites:', selectedSites);
 
+    const selectedMonths = [];
+    buttons_eplus.forEach(buttons_eplus => {
+      if (buttons_eplus.classList.contains('selected_eplus')) {
+        selectedMonths.push(buttons_eplus.id);
+      }
+    });
+    console.log('Selected months:', selectedMonths);
+
+    let l_tike_start_date = document.getElementById('l-tike_start_date').value;
+    let l_tike_end_date = document.getElementById('l-tike_end_date').value;
+
+    console.log('Selected start date:', l_tike_start_date);
+    console.log('Selected end date:', l_tike_end_date);
+    
     // Store selected sites in localStorage to access them in site_scraping.html
     localStorage.setItem('selectedSites', JSON.stringify(selectedSites));
+    localStorage.setItem('selectedMonths', JSON.stringify(selectedMonths));
+    localStorage.setItem('l-tike_start_date', JSON.stringify(l_tike_start_date));
+    localStorage.setItem('l-tike_end_date', JSON.stringify(l_tike_end_date));
 
     // Navigate to site_scraping.html
     window.location.href = 'site_scraping.html';
