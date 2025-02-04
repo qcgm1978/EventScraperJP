@@ -3,17 +3,17 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 let mainWindow;
-let pythonProcess;
+let pythonProcess = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1600,
     height: 1200,
+    icon: path.join(__dirname, 'site', 'favicon.ico'),
     webPreferences: {
-      preload: path.join(__dirname, 'renderer.js'),
       nodeIntegration: true,
       contextIsolation: false,
-    },
+    }
   });
 
   mainWindow.loadFile('./site/site_main.html');
@@ -24,8 +24,12 @@ function createWindow() {
 }
 
 app.on('ready', () => {
-  pythonProcess = spawn('python', ['python-backend/app.py']);
+  pythonProcess = spawn('python', ['./EventScraperJP.py'])
   createWindow();
+  pythonProcess.stdout.on('data', (data) => {
+    console.log(data.toString());
+    mainWindow.webContents.send('childoutput', data.toString());
+  });
 });
 
 app.on('window-all-closed', function () {
@@ -41,5 +45,6 @@ app.on('activate', function () {
 });
 
 app.on('quit', function () {
-  pythonProcess.kill();
-});
+  if (pythonProcess) {
+    pythonProcess.kill();
+}});
