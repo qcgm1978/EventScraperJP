@@ -24,12 +24,24 @@ function createWindow() {
 }
 
 app.on('ready', () => {
-  pythonProcess = spawn('python', ['./EventScraperJP.py'])
+  let pythonExePath;
+
+  if (process.env.NODE_ENV === "development") {
+    // In development, run Python script normally
+    pythonExePath = "python";
+    pythonProcess = spawn(pythonExePath, ["./EventScraperJP.py"]);
+  } else {
+    // In packaged app, find the bundled .exe
+    pythonExePath = path.join(process.resourcesPath, "EventScraperJP.exe");
+    pythonProcess = spawn(pythonExePath);
+  }
   createWindow();
-  pythonProcess.stdout.on('data', (data) => {
-    console.log(data.toString());
-    mainWindow.webContents.send('childoutput', data.toString());
-  });
+  if (pythonProcess) {
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(data.toString());
+      mainWindow.webContents.send('childoutput', data.toString());
+    });
+  }
 });
 
 app.on('window-all-closed', function () {
