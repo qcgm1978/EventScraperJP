@@ -427,6 +427,7 @@ def pia_jp_scrap():
         "https://t.pia.jp/anime/",
         "https://t.pia.jp/event/"
     ]
+    print(f"Selected sites: {urls}")
     Piaconcerts = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
@@ -515,13 +516,6 @@ if getattr(sys, 'frozen', False):  # When running as an .exe
 
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'site'))
 
-def signal_handler(sig, frame):
-    print('Exiting gracefully')
-    sys.exit(0)
-    
-    
-signal.signal(signal.SIGINT, signal_handler)
-
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, 'site_main.html')
@@ -557,6 +551,7 @@ def start_scrape():
     print(EXCEL_FILE)
     
     return jsonify({'status': 'success', 'selectedSites': selected_sites})
+
 
 if __name__ != '__main__':
     app.run(debug=True)
