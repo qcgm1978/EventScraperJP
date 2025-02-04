@@ -22,7 +22,7 @@
     "appId": "com.Mast.EventJPScraper",
     "productName": "EventJP Scraper",
     "directories": {
-      "output": "dist"
+      "output": "release-builds"
     },
     "files": [
       "main.js",
