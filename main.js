@@ -19,6 +19,9 @@ function createWindow() {
   mainWindow.loadFile('./site/site_main.html');
 
   mainWindow.on('closed', function () {
+    if (pythonProcess) {
+      pythonProcess.kill();
+    }
     mainWindow = null;
   });
 }
@@ -45,6 +48,9 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', function () {
+  if (pythonProcess) {
+    pythonProcess.kill();
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }
