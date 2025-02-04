@@ -15,10 +15,8 @@ from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 
-#If the front end allows it, the user might choose their own BASE_FOLDER. Then you should check if the BASE_FOLDER was chosen, if not, use the default one. 
-#Make the correct function and set up the deault BASE_FOLDER as rf"C:\Users\{username}\Documents\EventScraperJP" 
 username=os.getlogin()
 BASE_FOLDER = rf"C:\Users\{username}\Documents\EventScraperJP" 
 EXCEL_FILE = rf"{BASE_FOLDER}\EventsJP2025.xlsx"
@@ -510,7 +508,15 @@ def ltike_jp_scrap(from_date, to_date):
 #****************************************************************#
 #New code from app.py integrated here
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):  # When running as an .exe
+    BASE_DIR = sys._MEIPASS  # PyInstaller extracts files here
+
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'site'))
+
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'site_main.html')
 
 @app.route('/start_scrape', methods=['POST'])
 def start_scrape():
@@ -548,7 +554,8 @@ if __name__ != '__main__':
     app.run(debug=True)
 else:
     ISDEBUG = False
-    sys.stdout.reconfigure(line_buffering=True)
+    if sys.stdout:
+        sys.stdout.reconfigure(line_buffering=True)
     app.run()
 
 #****************************************************************#  
