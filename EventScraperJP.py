@@ -9,7 +9,6 @@ import os
 import concurrent.futures
 import random
 import sys
-import signal
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
@@ -562,7 +561,7 @@ else:
     app.run()
 
 #****************************************************************#  
-#Old code
+#Old code - good for debugging
 #
 #sheet_names = []
 #months = [4, 5]

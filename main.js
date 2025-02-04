@@ -1,7 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
-const fetch = require('node-fetch');
 
 let mainWindow;
 let pythonProcess = null;
@@ -11,6 +10,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1600,
     height: 1200,
+    resizable: false,
     icon: path.join(__dirname, 'site', 'app-icon.png'),
     webPreferences: {
       nodeIntegration: true,
@@ -42,11 +42,9 @@ app.on('ready', () => {
   let pythonExePath;
 
   if (process.env.NODE_ENV === "development") {
-    // In development, run Python script normally
     pythonExePath = "python";
     pythonProcess = spawn(pythonExePath, ["./EventScraperJP.py"]);
   } else {
-    // In packaged app, find the bundled .exe
     pythonExePath = path.join(process.resourcesPath, "EventScraperJP.exe");
     pythonProcess = spawn(pythonExePath, [], {detached: true});
     pid = pythonProcess.pid;
