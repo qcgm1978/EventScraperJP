@@ -9,6 +9,7 @@ import os
 import concurrent.futures
 import random
 import sys
+import signal
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from openpyxl.styles import Font, Color, PatternFill, Alignment, Fill
@@ -513,6 +514,13 @@ if getattr(sys, 'frozen', False):  # When running as an .exe
     BASE_DIR = sys._MEIPASS  # PyInstaller extracts files here
 
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'site'))
+
+def signal_handler(sig, frame):
+    print('Exiting gracefully')
+    sys.exit(0)
+    
+    
+signal.signal(signal.SIGINT, signal_handler)
 
 @app.route('/')
 def serve_index():
