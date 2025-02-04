@@ -67,17 +67,14 @@ ipcRenderer.on("childoutput", (event, data) => {
     console.log('Selected start date:', l_tike_start_date);
     console.log('Selected end date:', l_tike_end_date);
     
-    // Store selected sites in localStorage to access them in site_scraping.html
     localStorage.setItem('selectedSites', JSON.stringify(selectedSites));
     localStorage.setItem('selectedMonths', JSON.stringify(selectedMonths));
     localStorage.setItem('l-tike_start_date', JSON.stringify(l_tike_start_date));
     localStorage.setItem('l-tike_end_date', JSON.stringify(l_tike_end_date));
 
-    // Navigate to site_scraping.html
     window.location.href = 'site_scraping.html';
   });}
 
-  // Handle dynamic content in site_scraping.html
   if (window.location.pathname.endsWith('site_scraping.html')) {
     const chosenSitesDiv = document.getElementById('chosen-sites');
     const loadingWheelDiv = document.getElementById('loading-wheel');
@@ -89,21 +86,18 @@ ipcRenderer.on("childoutput", (event, data) => {
     const l_tike_start_date = JSON.parse(localStorage.getItem('l-tike_start_date')) || [];
     const l_tike_end_date = JSON.parse(localStorage.getItem('l-tike_end_date')) || [];
 
-    // Display chosen sites' logos
     selectedSites.forEach(site => {
       const img = document.createElement('img');
-      img.src = `./${site}.png`; // Assuming the logos are named after the site IDs
+      img.src = `./${site}.png`;
       img.alt = `${site} logo`;
       img.style.transform = 'scale(0.7)';
       chosenSitesDiv.appendChild(img);
     });
 
-    // Display loading wheel
     const loadingWheel = document.createElement('div');
     loadingWheel.className = 'spinner';
     loadingWheelDiv.appendChild(loadingWheel);
 
-    // Fetch data from the backend and display output
     request = {
       method: 'POST',
       headers: {
@@ -119,24 +113,24 @@ ipcRenderer.on("childoutput", (event, data) => {
     })
     .then(data => {
       console.log('Success:', data);
-      loadingWheelDiv.style.display = 'none'; // Hide loading wheel
-      exitButton.style.display = 'block'; // Show exit button
+      loadingWheelDiv.style.display = 'none';
+      exitButton.style.display = 'block';
     })
     .catch((error) => {
       console.error('Error:', error);
-      loadingWheelDiv.style.display = 'none'; // Hide loading wheel
-      exitButton.style.display = 'block'; // Show exit button
+      loadingWheelDiv.style.display = 'none';
+      exitButton.style.display = 'block';
     });
 
-    // Add event listener to exit button
+    
     exitButton.addEventListener('click', function() {
-      window.close(); // Close the Electron window
+      window.close();
     });
   };
   const exitButton = document.getElementById('exit-button');
   if (exitButton)
   exitButton.addEventListener('click', function() {
-    window.close(); // Close the Electron window
+    window.close();
   });
 
   const backButton = document.getElementById('back-button');

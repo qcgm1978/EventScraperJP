@@ -1,18 +1,47 @@
 {
-  "name": "eventjp-scraper",
+  "name": "eventjpscraper",
   "version": "1.0.0",
-  "description": "EventJP Scraper application that uses Electron for the frontend and a Python backend to scrape event data from various sources.",
+  "description": "EventJP Scraper",
+  "author": "Mast",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder",
-    "electron": "^25.3.1"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win"
   },
   "devDependencies": {
-    "electron": "^13.1.7"
+    "electron": "13.1.7",
+    "electron-builder": "^24.6.0"
   },
   "dependencies": {
     "axios": "^1.4.0"
+  },
+  "build": {
+    "appId": "com.Mast.EventJPScraper",
+    "productName": "EventJP Scraper",
+    "directories": {
+      "output": "release-builds"
+    },
+    "files": [
+      "main.js",
+      "package.json",
+      "site/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/EventScraperJP.exe",
+        "to": "EventScraperJP.exe"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "site/app-icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
