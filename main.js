@@ -1,6 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { spawn, exec } = require('child_process');
+const { spawn } = require('child_process');
+const fetch = require('node-fetch');
 
 let mainWindow;
 let pythonProcess = null;
@@ -21,16 +22,20 @@ function createWindow() {
 
   mainWindow.on('closed', function () {
     if (pythonProcess) {
-      exec(`taskkill /PID ${pid} /F`);
+      killPythonExe()
     }
     mainWindow = null;
   });
 
   mainWindow.on('close', function () {
     if (pythonProcess) {
-      exec(`taskkill /PID ${pid} /F`);
+      killPythonExe()
     }
   });
+}
+
+function killPythonExe() {
+  spawn('taskkill', ['/f', '/t', '/im', 'EventScraperJP.exe'], {detached: true});
 }
 
 app.on('ready', () => {
@@ -63,7 +68,7 @@ app.on('activate', function () {
 
 app.on('window-all-closed', function () {
   if (pythonProcess) {
-    exec(`taskkill /PID ${pid} /F`);
+    killPythonExe()
   }
   if (process.platform !== 'darwin') {
     app.quit();
@@ -72,6 +77,6 @@ app.on('window-all-closed', function () {
 
 app.on('quit', function () {
   if (pythonProcess) {
-    exec(`taskkill /PID ${pid} /F`);
+    killPythonExe()
   }
 });
