@@ -112,7 +112,7 @@ ul {
  width: 400px; /* Set the width to 100% */
  margin: 0; /* Remove any margin */
  vertical-align: middle; /* Align the image vertically with the text */
- transform-origin: middle; /* Control the scaling origin */
+ transform-origin: center; /* Control the scaling origin */
 }
 
 .page button{
@@ -214,6 +214,7 @@ button:active {
   cursor: pointer;
   width: 100%;
   max-width: 600px;
+  font-weight: bold;
 }
 
 .chosen-sites {
