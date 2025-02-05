@@ -548,7 +548,7 @@ def start_scrape():
 
     print(f"All done! Your file has been saved to:")
     print(EXCEL_FILE)
-    
+    os.startfile(BASE_FOLDER)
     return jsonify({'status': 'success', 'selectedSites': selected_sites})
 
 
